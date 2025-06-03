@@ -47,7 +47,7 @@ def reset_background():
     clouds.clear()
     trees.clear()
 
-    cloud_count = 5
+    cloud_count = 3
     for i in range(cloud_count):
         clouds.append(create_cloud(y=i * 100))  # 100px vertical spacing
 
