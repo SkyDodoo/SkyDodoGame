@@ -30,9 +30,12 @@ def spawn_enemies(num, screen_width, screen_height):
 
 def run_game():
     pygame.init()
+    pygame.mixer.init()
     screen_width, screen_height = 600, 750
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
+
+    jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
 
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
@@ -52,10 +55,14 @@ def run_game():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not player.is_jumping:
                     player.jump()  # Removed 'stronger=True'
-
+                    jump_sound.play()
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
+
+        #Moving Platforms
+        for p in platforms:
+            p.update()
 
 
         # Update score
