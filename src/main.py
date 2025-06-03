@@ -44,7 +44,8 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
-                    print("Start Game clicked (hook up game here)")
+                    from src.game import run_game
+                    run_game()
                 elif exit_btn.collidepoint(event.pos):
                     running = False
 
