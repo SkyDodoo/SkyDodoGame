@@ -42,6 +42,7 @@ def recycle_platforms(platforms):
     platform_width = 110
     platform_height = 25
     max_attempts = 10
+    min_vertical_distance = 80
 
     for p in platforms[:]:
         if p.y > screen_height:
@@ -49,23 +50,26 @@ def recycle_platforms(platforms):
 
             #try to search for a new position if something overlaps
             for i in range(max_attempts):
-                new_x = random.randint(0, screen_width - platform_width)
+                new_x = random.randint(0, screen_width - platform_width -80)
                 new_y = random.randint(-100, -10)
-                if not is_overlappping(new_x, new_y, platform_width, platform_height, platforms):
+                if not is_too_close_vertically(new_y, platforms, min_vertical_distance) and \
+                    not is_overlapping(new_x, new_y, platform_width, platform_height, platforms):
+                    platforms.append(Platform(new_x, new_y, platform_width, platform_height))
                     break
-        else:
-            continue
-
-        platforms.append(Platform(new_x, new_y, platform_width, platform_height))
-
 
 #Checking if platforms are overlapping
-def is_overlappping(new_x, new_y, width, height, platforms):
+def is_overlapping(new_x, new_y, width, height, platforms):
     for p in platforms:
         if (new_x < p.x + p.width and
             new_x + width > p.x and
             new_y < p.y + p.height and
             new_y + height > p.y):
+            return True
+    return False
+
+def is_too_close_vertically(new_y, platforms, min_distance):
+    for p in platforms:
+        if abs(new_y - p.y) < min_distance:
             return True
     return False
 
