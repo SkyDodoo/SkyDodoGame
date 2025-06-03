@@ -15,10 +15,11 @@ def run_game():
     font = pygame.font.SysFont("Arial", 24)
 
     back_button_rect = pygame.Rect(screen_width - 110, 10, 100, 40)  # top-right
+    start_time = pygame.time.get_ticks()  # Timer starts
 
     running = True
     while running:
-        dt = clock.tick(60) / 1000
+        clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -61,4 +62,18 @@ def run_game():
         back_text_rect = back_text.get_rect(center=back_button_rect.center)
         screen.blit(back_text, back_text_rect)
 
+        # Draw MM:SS timer with blue background
+        elapsed_ms = pygame.time.get_ticks() - start_time
+        minutes = elapsed_ms // 60000
+        seconds = (elapsed_ms % 60000) // 1000
+        timer_str = f"{minutes:02}:{seconds:02}"
+
+        timer_text = font.render(timer_str, True, (255, 255, 255))
+        timer_bg_rect = pygame.Rect(10, 10, 80, 40)  # background box
+        pygame.draw.rect(screen, (70, 130, 180), timer_bg_rect, border_radius=8)
+        text_rect = timer_text.get_rect(center=timer_bg_rect.center)
+        screen.blit(timer_text, text_rect)
+
         pygame.display.update()
+
+
