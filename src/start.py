@@ -42,51 +42,37 @@ def load_assets():
 
 
 def reset_background():
-    """Reset and randomly generate initial background objects."""
+    """Reset and generate background clouds and trees with simple spacing."""
     global clouds, trees
     clouds.clear()
     trees.clear()
 
-    while len(clouds) < 5:
-        cloud = create_cloud(clouds)
-        if cloud:
-            clouds.append(cloud)
-        else:
-            break  # Could not place non-overlapping cloud
+    cloud_count = 5
+    for i in range(cloud_count):
+        clouds.append(create_cloud(y=i * 100))  # 100px vertical spacing
 
-    while len(trees) < 5:
+    tree_count = 5
+    for _ in range(tree_count):
         trees.append(create_tree())
 
 
-def check_overlap(new_rect: pygame.Rect, others: List[Dict[str, Any]]) -> bool:
-    """Check if new_rect overlaps with any other object in the list."""
-    return any(new_rect.colliderect(
-        pygame.Rect(o["x"], o["y"], o["image"].get_width(), o["image"].get_height())
-    ) for o in others)
-
-
-def create_cloud(existing_clouds: List[Dict[str, Any]], max_attempts=100, allow_on_screen=True) -> Optional[Dict[str, Any]]:
-    """Create a new cloud dictionary object."""
+def create_cloud(y: Optional[int] = None) -> Dict[str, Any]:
+    """Create a single cloud without overlap logic."""
     assert cloud_img_original is not None, "Cloud image not loaded"
 
-    for _ in range(max_attempts):
-        scale = random.uniform(0.4, 0.9)
-        width = int(cloud_img_original.get_width() * scale)
-        height = int(cloud_img_original.get_height() * scale)
-        image = pygame.transform.scale(cloud_img_original, (width, height))
+    scale = random.uniform(0.4, 0.9)
+    width = int(cloud_img_original.get_width() * scale)
+    height = int(cloud_img_original.get_height() * scale)
+    image = pygame.transform.scale(cloud_img_original, (width, height))
 
-        if random.choice([True, False]):
-            image = pygame.transform.flip(image, True, False)
+    if random.choice([True, False]):
+        image = pygame.transform.flip(image, True, False)
 
-        y = random.randint(0, SCREEN_HEIGHT // 2) if allow_on_screen and len(existing_clouds) < 3 else random.randint(-600, -100)
-        x = random.randint(0, SCREEN_WIDTH - width)
-        new_rect = pygame.Rect(x, y, width, height)
+    x = random.randint(0, SCREEN_WIDTH - width)
+    y = y if y is not None else random.randint(-600, -100)
 
-        if not check_overlap(new_rect, existing_clouds):
-            return {"image": image, "x": x, "y": y, "speed": random.uniform(0.5, 2.5)}
+    return {"image": image, "x": x, "y": y, "speed": random.uniform(0.5, 2.5)}
 
-    print("[DEBUG] Could not place a cloud after", max_attempts, "attempts.")
-    return None
 
 
 def create_tree() -> Dict[str, Any]:
@@ -126,7 +112,7 @@ def draw_background(surface: pygame.Surface):
         surface.blit(cloud["image"], (cloud["x"], cloud["y"]))
         if cloud["y"] > SCREEN_HEIGHT:
             clouds.remove(cloud)
-            new_cloud = create_cloud(clouds, allow_on_screen=False)
+            new_cloud = create_cloud()
             if new_cloud:
                 clouds.append(new_cloud)
 
