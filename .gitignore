@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+*.env
+
+# PyCharm
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pygame-specific (optional, if you use resources)
+assets/*.tmp
+*.log
+
+# Compiled Cython files
+*.c
+*.cpp
