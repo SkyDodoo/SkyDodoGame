@@ -1,0 +1,3 @@
+pygame>=2.0.0
+numpy       # for advanced logic or platform math
+Pillow      # for image loading/resizing
