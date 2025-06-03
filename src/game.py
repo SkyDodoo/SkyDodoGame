@@ -11,7 +11,7 @@ def run_game():
     clock = pygame.time.Clock()
 
     player = Player(300, screen_height - 150)
-    platforms = generate_platforms()
+    platforms = generate_platforms(screen_width, screen_height)
     font = pygame.font.SysFont("Arial", 24)
 
     running = True
@@ -36,7 +36,7 @@ def run_game():
             scroll = screen_height // 3 - player.y
             player.y = screen_height // 3
             scroll_platforms(platforms, scroll)
-            recycle_platforms(platforms)
+            recycle_platforms(platforms, screen_width, screen_height)
 
         # Collision
         player_rect = player.get_rect()
