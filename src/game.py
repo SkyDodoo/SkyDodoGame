@@ -1,4 +1,4 @@
-# src/game.py
+# game.py
 import pygame
 from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
@@ -13,13 +13,15 @@ def run_game():
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
     font = pygame.font.SysFont("Arial", 24)
-
+    start_y = player.y
+    max_height = 0
     back_button_rect = pygame.Rect(screen_width - 110, 10, 100, 40)  # top-right
     start_time = pygame.time.get_ticks()  # Timer starts
 
+
     running = True
     while running:
-        clock.tick(60)
+        dt = clock.tick(60) / 1000
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -35,12 +37,20 @@ def run_game():
         player.move(keys, screen_width)
         player.apply_gravity()
 
+
+        # Update score
+        height_climbed = max(0, start_y - player.y)
+        if height_climbed > max_height:
+            max_height = int(height_climbed)
+
+        # Scroll screen
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
             player.y = screen_height // 3
             scroll_platforms(platforms, scroll)
             recycle_platforms(platforms, screen_width, screen_height)
 
+        # Collision
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -72,7 +82,40 @@ def run_game():
         pygame.draw.rect(screen, (70, 130, 180), timer_bg_rect, border_radius=8)
         text_rect = timer_text.get_rect(center=timer_bg_rect.center)
         screen.blit(timer_text, text_rect)
+        # Score
+        score_text = font.render(f"Score: {max_height}", True, (0, 0, 0))
+        screen.blit(score_text, (10, 10))
+
+        # Game over check
+        if player.y > screen_height:
+            return show_game_over(screen, font, max_height)
 
         pygame.display.update()
 
+def show_game_over(screen, font, score):
+    clock = pygame.time.Clock()
+    running = True
+    while running:
+        screen.fill((0, 0, 0))
+        text = font.render("\U0001FAA6 Game Over", True, (255, 0, 0))
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+        retry_text = font.render("Press SPACE to Retry or ESC to Quit", True, (200, 200, 200))
 
+        screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, 200))
+        screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 270))
+        screen.blit(retry_text, (screen.get_width() // 2 - retry_text.get_width() // 2, 350))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return run_game()
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
+
+        clock.tick(60)
