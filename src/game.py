@@ -1,8 +1,8 @@
 # src/game.py
 import pygame
-from src.player import Player
-from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
-from src.start import draw_background
+from player import Player
+from game_platform import generate_platforms, scroll_platforms, recycle_platforms
+from start import draw_background
 
 def run_game():
     pygame.init()
