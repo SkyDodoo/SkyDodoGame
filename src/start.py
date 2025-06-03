@@ -17,7 +17,8 @@ trees = []
 
 def load_assets():
     global sky_img, cloud_img_original, tree_img_original
-    image_dir = os.path.join("../assets", "images")
+    base_dir = os.path.dirname(__file__)
+    image_dir = os.path.join(base_dir, "..", "assets", "images")
 
     def load_image(name):
         return pygame.image.load(os.path.join(image_dir, name)).convert_alpha()
@@ -34,6 +35,8 @@ def reset_background():
         cloud = create_cloud(clouds)
         if cloud:
             clouds.append(cloud)
+        else:
+            break  # Stop trying if placement fails
     while len(trees) < 5:
         trees.append(create_tree())
 
@@ -43,6 +46,9 @@ def check_overlap(new_rect, others):
     ) for o in others)
 
 def create_cloud(existing_clouds, max_attempts=100, allow_on_screen=True):
+    if cloud_img_original is None:
+        raise ValueError("cloud_img_original is not loaded. Check your image path or loading code.")
+
     for _ in range(max_attempts):
         scale = random.uniform(0.4, 0.9)
         width = int(cloud_img_original.get_width() * scale)
@@ -57,6 +63,7 @@ def create_cloud(existing_clouds, max_attempts=100, allow_on_screen=True):
 
         if not check_overlap(new_rect, existing_clouds):
             return {"image": image, "x": x, "y": y, "speed": random.uniform(0.5, 2.5)}
+    print("[DEBUG] Could not place a cloud without overlapping after", max_attempts, "attempts.")
     return None
 
 def create_tree():
