@@ -14,6 +14,8 @@ def run_game():
     platforms = generate_platforms(screen_width, screen_height)
     font = pygame.font.SysFont("Arial", 24)
 
+    back_button_rect = pygame.Rect(screen_width - 110, 10, 100, 40)  # top-right
+
     running = True
     while running:
         dt = clock.tick(60) / 1000
@@ -25,20 +27,20 @@ def run_game():
                 if event.key == pygame.K_SPACE:
                     if not player.is_jumping:
                         player.jump()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if back_button_rect.collidepoint(event.pos):
+                    return  # Back to main menu
 
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
-       # player.update(dt)
 
-        # Scroll screen if player high
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
             player.y = screen_height // 3
             scroll_platforms(platforms, scroll)
             recycle_platforms(platforms, screen_width, screen_height)
 
-        # Collision
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -48,10 +50,15 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
-
         draw_background(screen)
         for p in platforms:
             p.draw(screen)
         player.draw(screen)
+
+        # Draw back button
+        pygame.draw.rect(screen, (200, 50, 50), back_button_rect, border_radius=8)
+        back_text = font.render("Back", True, (255, 255, 255))
+        back_text_rect = back_text.get_rect(center=back_button_rect.center)
+        screen.blit(back_text, back_text_rect)
 
         pygame.display.update()
