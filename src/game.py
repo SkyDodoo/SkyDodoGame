@@ -6,10 +6,12 @@ from src.start import draw_background
 
 def run_game():
     pygame.init()
+    pygame.mixer.init()
     screen_width, screen_height = 600, 750
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
 
+    jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
     font = pygame.font.SysFont("Arial", 24)
@@ -29,6 +31,7 @@ def run_game():
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not player.is_jumping:
                     player.jump()
+                    jump_sound.play()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button_rect.collidepoint(event.pos):
                     return  # Back to main menu
@@ -37,6 +40,8 @@ def run_game():
         player.move(keys, screen_width)
         player.apply_gravity()
 
+        for p in platforms:
+            p.update()
 
         # Update score
         height_climbed = max(0, start_y - player.y)
