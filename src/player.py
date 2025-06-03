@@ -78,7 +78,7 @@ while running:
         game_over = True
 
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen,(255, 255, 255,), (0,ground_y, screen_width, ground_height))
+    #pygame.draw.rect(screen,(255, 255, 255,), (0,ground_y, screen_width, ground_height))
     player.draw(screen)
     pygame.display.flip()
 
