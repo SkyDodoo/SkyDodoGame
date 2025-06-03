@@ -25,9 +25,8 @@ def run_game():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    if not player.is_jumping:
-                        player.jump()
+                if event.key == pygame.K_SPACE and not player.is_jumping:
+                    player.jump()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if back_button_rect.collidepoint(event.pos):
                     return  # Back to main menu

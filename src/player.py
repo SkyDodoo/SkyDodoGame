@@ -9,7 +9,7 @@ class Player:
         self.x = x
         self.y = y
         self.vel_y = 0
-        self.gravity = 0.4
+        self.gravity = 0.8
         self.is_jumping = False
         self.direction = "idle"  # 'fly', 'jump', 'rotate'
 
@@ -61,7 +61,7 @@ class Player:
             self.direction = "rotate"
 
     def jump(self):
-        self.vel_y = -10
+        self.vel_y = -20
         self.is_jumping = True
         self.direction = "jump"
 
