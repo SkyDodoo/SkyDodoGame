@@ -50,7 +50,8 @@ class Player:
             self.image = self.frames[self.current_frame]
 
     def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        # screen.blit(self.image, (self.x, self.y))
+        pygame.draw.rect(screen, (255, 103, 0), (self.x, self.y, self.width, self.height))
 
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
