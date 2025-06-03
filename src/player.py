@@ -1,86 +1,56 @@
 import pygame
-from pygame.locals import *
 
 class Player:
-    width = 50
-    height = 50
+    width = 64
+    height = 64
     speed = 5
 
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.color = (0, 0, 255)
-        self.gravity = 0.3
         self.vel_y = 0
-        self.is_jumping = False #Player starts at the ground
+        self.gravity = 0.4
+        self.is_jumping = False
 
-    # move horizontally
+        self.frames = self.load_sprite_frames("../assets/images/dodo_sprite_sheet.png", 128, 128)
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.animation_speed = 0.1
+        self.image = self.frames[self.current_frame]
+
+    def load_sprite_frames(self, path, frame_width, frame_height):
+        sprite_sheet = pygame.image.load(path).convert_alpha()
+        frames = []
+        for i in range(6):
+            frame = sprite_sheet.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height))
+            frame = pygame.transform.scale(frame, (self.width, self.height))
+            frames.append(frame)
+        return frames
+
     def move(self, keys, screen_width):
-        if keys[K_LEFT]:
+        if keys[pygame.K_LEFT]:
             self.x -= self.speed
-            if self.x < 0: # limit screen
-                self.x = 0
-        if keys[K_RIGHT]:
+        if keys[pygame.K_RIGHT]:
             self.x += self.speed
-            if self.x > screen_width - self.width:
-                self.x = screen_width - self.width
-
+        self.x = max(0, min(self.x, screen_width - self.width))
 
     def apply_gravity(self):
         self.vel_y += self.gravity
         self.y += self.vel_y
 
     def jump(self):
-        if not self.is_jumping:
-            self.vel_y = -6
-            self.is_jumping = True
+        self.vel_y = -10
+        self.is_jumping = True
 
+    def update(self, dt):
+        self.animation_timer += dt
+        if self.animation_timer >= self.animation_speed:
+            self.animation_timer = 0
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
+        screen.blit(self.image, (self.x, self.y))
 
-
-
-pygame.init()
-
-screen_width = 600
-screen_height = 750
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption('SkyDodo')
-
-clock = pygame.time.Clock()
-
-ground_height = 100
-ground_y = screen_height - ground_height
-
-player = Player(100, ground_y - Player.height)
-
-running = True
-game_over = False
-
-
-while running:
-    clock.tick(60)
-
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            running = False
-
-    if not game_over:
-        keys = pygame.key.get_pressed()
-        player.move(keys, screen_width)
-        player.apply_gravity()
-
-    if player.y + player.height >= ground_y:
-        player.jump()
-
-    if player.y > screen_height:
-        game_over = True
-
-    screen.fill((0, 0, 0))
-    #pygame.draw.rect(screen,(255, 255, 255,), (0,ground_y, screen_width, ground_height))
-    player.draw(screen)
-    pygame.display.flip()
-
-
-pygame.quit()
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
