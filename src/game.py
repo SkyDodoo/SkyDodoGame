@@ -21,6 +21,10 @@ def run_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    if not player.is_jumping:
+                        player.jump()
 
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
@@ -43,6 +47,7 @@ def run_game():
                     player.y = p.y - player.height
                     player.vel_y = 0
                     player.is_jumping = False
+
 
         draw_background(screen)
         for p in platforms:
