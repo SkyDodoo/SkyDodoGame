@@ -1,7 +1,7 @@
 # main.py
 import pygame
 import sys
-from src import start  # background module
+import start  # background module
 
 pygame.init()
 
@@ -44,7 +44,7 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
-                    from src.game import run_game
+                    from game import run_game
                     run_game()
                 elif exit_btn.collidepoint(event.pos):
                     running = False
