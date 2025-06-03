@@ -1,8 +1,8 @@
 # main.py
 import pygame
 import sys
-import start  # background module
-
+import src.start  # background module
+from src.game import run_game
 pygame.init()
 
 SCREEN_WIDTH = 600
@@ -14,8 +14,8 @@ font = pygame.font.SysFont("Arial", 36)
 clock = pygame.time.Clock()
 
 # Initialize background assets
-start.load_assets()
-start.reset_background()
+src.start.load_assets()
+src.start.reset_background()
 
 def draw_button(text, x, y, width, height):
     rect = pygame.Rect(x, y, width, height)
@@ -29,7 +29,7 @@ def main_menu():
     running = True
     while running:
         screen.fill((0, 0, 0))
-        start.draw_background(screen)
+        src.start.draw_background(screen)
 
         title = font.render("SkyDodo", True, (255, 255, 255))
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 120))
@@ -44,7 +44,7 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
-                    from game import run_game
+
                     run_game()
                 elif exit_btn.collidepoint(event.pos):
                     running = False
