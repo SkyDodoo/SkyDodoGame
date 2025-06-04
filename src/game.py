@@ -22,13 +22,14 @@ def save_high_score(score):
 
 def spawn_enemies(num, screen_width, screen_height, game, platforms):
     enemies = []
-    attempts = 0 #count for attempts (place enemie)
+    attempts = 0 #count for attempts (place enemy)
+    min_distance = 200 #min distance between the enemies
 
     while len(enemies) < num and attempts < 100: #until enough players or max 100 attempts
         x = randint(50, screen_width - ENEMY_SIZE -50)
         y = randint(100, screen_height -200)
 
-        # creating a test for enemie
+        # creating a test for enemy
         test_rect = pygame.Rect(x,y, ENEMY_SIZE, ENEMY_SIZE)
 
         collides = False
@@ -38,9 +39,17 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
                 collides = True
                 break
 
+        if not collides: #check for distance enemies
+            for e in enemies:
+                distance = ((e.rect.x - x)**2 + (e.rect.y - y)**2)**0.5 #calculation of the "Luftlinie"
+                if distance < min_distance:
+                    collides = True
+                    break
+
         if not collides: #create enemy
             enemy = Monster(game=game, x=x, y=y)
             enemies.append(enemy)
+
         attempts += 1
 
     return enemies
