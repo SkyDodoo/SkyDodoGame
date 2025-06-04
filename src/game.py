@@ -47,7 +47,7 @@ def run_game():
 
     running = True
     while running:
-        dt = clock.tick(60) / 1000
+        clock.tick(60) / 1000
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -115,6 +115,8 @@ def run_game():
             return show_game_over(screen, font, max_height)
 
         pygame.display.update()
+    return None
+
 
 def show_game_over(screen, font, score):
     clock = pygame.time.Clock()
@@ -159,3 +161,4 @@ def show_game_over(screen, font, score):
                     exit()
 
         clock.tick(60)
+    return None
