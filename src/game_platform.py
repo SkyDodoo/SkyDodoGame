@@ -41,11 +41,7 @@ def generate_platforms(screen_width, screen_height, num=8):
         x = random.randint(10, screen_width - platform_width)
         y = screen_height - i * 90
 
-        moving = True  # immer beweglich
-        move_range = random.randint(50, 150)
-        move_speed = random.randint(1, 3)
-
-        platforms.append(Platform(x, y, platform_width, 25, moving, move_range, move_speed))
+        platforms.append(Platform(x, y, platform_width, 25))
     return platforms
 
 def scroll_platforms(platforms, scroll_amount):
@@ -58,8 +54,8 @@ def recycle_platforms(platforms, screen_width, screen_height):
     platform_width = 110
     platform_height = 25
     max_attempts = 10
-    min_vertical_distance = 70
-    max_vertical_distance = 90
+    min_vertical_distance = 80
+    max_vertical_distance = 100
     max_horizontal_distance = 120
 
     for p in platforms[:]:
@@ -74,8 +70,20 @@ def recycle_platforms(platforms, screen_width, screen_height):
                     is_within_max_horizontal_distance(new_x, platforms, max_horizontal_distance) and
                     is_within_max_vertical_distance(new_y, platforms, max_vertical_distance)
                 ):
-                    move_range = random.randint(50, 150)
-                    move_speed = random.randint(1, 3)
+                    moving = random.random() > 0.8
+                    if moving:
+                        max_range_left = new_x
+                        max_range_right = screen_width - (new_x + platform_width)
+
+                        if max_range_left < 50 or max_range_right < 50:
+                            move_range = random.randint(150, 300)
+                        else:
+                            move_range = int(min(max_range_left, max_range_right) * random.uniform(0.8, 1.0))
+                    else:
+                        move_range = 0
+
+                    move_speed = random.randint(2, 4) if moving else 0
+
                     platforms.append(Platform(new_x, new_y, platform_width, platform_height, True, move_range, move_speed))
                     break
 
