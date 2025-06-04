@@ -5,7 +5,7 @@ platform_img = pygame.image.load("assets/images/platform.png")
 
 #Class for Platforms
 class Platform:
-    def __init__(self, x, y, width=100, height=25, moving=False, move_range=100, move_speed=2, image=None):
+    def __init__(self, x, y, width=100, height=25, moving=False, move_range=100, move_speed=2, image=None, is_ground=False):
         self.x = x
         self.y = y
         self.width = width
@@ -17,6 +17,7 @@ class Platform:
         self.direction = 1 #1 = right, -1 = left
         self.movement_delta = 0
         self.image = image
+        self.is_ground = is_ground
 
         if image:
             self.image = pygame.transform.scale(image, (self.width, self.height))
@@ -40,11 +41,15 @@ class Platform:
         else:
             pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
 
+        if self.y >= screen.get_height() - 30 and self.is_ground:
+            ground_img = pygame.image.load("assets/images/ground_new.png").convert_alpha()
+            ground_img = pygame.transform.scale(ground_img, (screen.get_width(), ground_img.get_height()))
+            screen.blit(ground_img, (0, 750 - 80))
+
 def generate_platforms(screen_width, screen_height, num=8):
     platforms = []
 
-    ground_img = pygame.image.load("assets/images/ground.png")
-    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False, image=ground_img)
+    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False, is_ground=True)
     platforms.append(ground)
 
     platform_width = 100
@@ -58,15 +63,14 @@ def generate_platforms(screen_width, screen_height, num=8):
 def scroll_platforms(platforms, scroll_amount):
     for p in platforms:
         p.y += scroll_amount
-        p.update()
 
 #delete platforms that are out of the screen and append new ones
 def recycle_platforms(platforms, screen_width, screen_height):
     platform_width = 100
     platform_height = 25
     max_attempts = 10
-    min_vertical_distance = 80
-    max_vertical_distance = 100
+    min_vertical_distance = 50
+    max_vertical_distance = 80
     max_horizontal_distance = 120
 
     for p in platforms[:]:
