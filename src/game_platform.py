@@ -1,9 +1,11 @@
 import pygame
 import random
 
+platform_img = pygame.image.load("assets/images/platform.png")
+
 #Class for Platforms
 class Platform:
-    def __init__(self, x, y, width=100, height=25, moving=False, move_range=100, move_speed=2):
+    def __init__(self, x, y, width=100, height=25, moving=False, move_range=100, move_speed=2, image=None):
         self.x = x
         self.y = y
         self.width = width
@@ -14,6 +16,10 @@ class Platform:
         self.start_x = x
         self.direction = 1 #1 = right, -1 = left
         self.movement_delta = 0
+        self.image = image
+
+        if image:
+            self.image = pygame.transform.scale(image, (self.width, self.height))
 
     def update(self):
         if self.moving:
@@ -28,24 +34,25 @@ class Platform:
             self.movement_delta = 0
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
+        #pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
+        if self.image:
+            screen.blit(self.image, (self.x, self.y))
+        else:
+            pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
 
 def generate_platforms(screen_width, screen_height, num=8):
     platforms = []
 
-    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False)
+    ground_img = pygame.image.load("assets/images/ground.png")
+    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False, image=ground_img)
     platforms.append(ground)
 
-    platform_width = 110
+    platform_width = 100
     for i in range(num):
         x = random.randint(10, screen_width - platform_width)
         y = screen_height - i * 90
 
-        moving = True  # immer beweglich
-        move_range = random.randint(50, 150)
-        move_speed = random.randint(1, 3)
-
-        platforms.append(Platform(x, y, platform_width, 25, moving, move_range, move_speed))
+        platforms.append(Platform(x, y, platform_width, 25, image=platform_img))
     return platforms
 
 def scroll_platforms(platforms, scroll_amount):
@@ -55,11 +62,11 @@ def scroll_platforms(platforms, scroll_amount):
 
 #delete platforms that are out of the screen and append new ones
 def recycle_platforms(platforms, screen_width, screen_height):
-    platform_width = 110
+    platform_width = 100
     platform_height = 25
     max_attempts = 10
-    min_vertical_distance = 70
-    max_vertical_distance = 90
+    min_vertical_distance = 80
+    max_vertical_distance = 100
     max_horizontal_distance = 120
 
     for p in platforms[:]:
@@ -74,9 +81,21 @@ def recycle_platforms(platforms, screen_width, screen_height):
                     is_within_max_horizontal_distance(new_x, platforms, max_horizontal_distance) and
                     is_within_max_vertical_distance(new_y, platforms, max_vertical_distance)
                 ):
-                    move_range = random.randint(50, 150)
-                    move_speed = random.randint(1, 3)
-                    platforms.append(Platform(new_x, new_y, platform_width, platform_height, True, move_range, move_speed))
+                    moving = random.random() > 0.8
+                    if moving:
+                        max_range_left = new_x
+                        max_range_right = screen_width - (new_x + platform_width)
+
+                        if max_range_left < 50 or max_range_right < 50:
+                            move_range = random.randint(150, 300)
+                        else:
+                            move_range = int(min(max_range_left, max_range_right) * random.uniform(0.8, 1.0))
+                    else:
+                        move_range = 0
+
+                    move_speed = random.randint(2, 4) if moving else 0
+
+                    platforms.append(Platform(new_x, new_y, platform_width, platform_height, True, move_range, move_speed, image=platform_img))
                     break
 
 #Checking if platforms are overlapping
@@ -104,7 +123,7 @@ def is_within_max_vertical_distance(new_y, platforms, max_distance):
 def is_within_max_horizontal_distance(new_x, platforms, max_distance):
     for p in platforms:
         p_center_x = p.x +  p.width / 2
-        new_center_x = new_x + 110 / 2
+        new_center_x = new_x + 100 / 2
         if abs(new_center_x - p_center_x) < max_distance:
             return True
     return False
