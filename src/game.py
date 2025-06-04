@@ -168,6 +168,7 @@ def run_game():
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
+        player.update(dt)
 
         for p in platforms:
             p.update()
