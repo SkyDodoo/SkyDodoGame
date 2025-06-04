@@ -1,10 +1,11 @@
 # game.py
 import pygame
 import os
+from random import randint
 from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
 from src.start import draw_background
-from random import randint
+from src.sprites.enemy_1 import Monster
 
 HIGHSCORE_FILE = "highscore.txt"
 ENEMY_SIZE = 50
@@ -19,13 +20,13 @@ def save_high_score(score):
     with open(HIGHSCORE_FILE, "w") as f:
         f.write(str(score))
 
-def spawn_enemies(num, screen_width, screen_height):
+def spawn_enemies(num, screen_width, screen_height, game):
     enemies = []
     for _ in range(num):
         x = randint(50, screen_width - ENEMY_SIZE - 50)
         y = randint(100, screen_height - 200)
-        rect = pygame.Rect(x, y, ENEMY_SIZE, ENEMY_SIZE)
-        enemies.append(rect)
+        enemy = Monster(game=game, x=x, y=y)
+        enemies.append(enemy)
     return enemies
 
 def run_game():
@@ -36,14 +37,15 @@ def run_game():
     clock = pygame.time.Clock()
 
     jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
+    game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
+    font = pygame.font.SysFont("Arial", 24)
 
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
-    enemies = spawn_enemies(3, screen_width, screen_height)
-    font = pygame.font.SysFont("Arial", 24)
+    enemies = spawn_enemies(3, screen_width, screen_height, screen)
+
     start_y = player.y
     max_height = 0
-    game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
 
     running = True
     while running:
@@ -54,16 +56,15 @@ def run_game():
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not player.is_jumping:
-                    player.jump()  # Removed 'stronger=True'
+                    player.jump()
                     jump_sound.play()
+
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
 
-        #Moving Platforms
-        for p in platforms:
-            p.update()
-
+        for platform in platforms:
+            platform.update()
 
         # Update score
         height_climbed = max(0, start_y - player.y)
@@ -76,13 +77,13 @@ def run_game():
             player.y = screen_height // 3
             scroll_platforms(platforms, scroll)
             recycle_platforms(platforms, screen_width, screen_height)
-            for e in enemies:
-                e.y += scroll
-                if e.y > screen_height:
-                    e.y = -ENEMY_SIZE
-                    e.x = randint(50, screen_width - ENEMY_SIZE - 50)
+            for enemy in enemies:
+                enemy.rect.y += scroll
+                if enemy.rect.y > screen_height:
+                    enemy.rect.y = -ENEMY_SIZE
+                    enemy.rect.x = randint(50, screen_width - ENEMY_SIZE - 50)
 
-        # Collision with platforms
+        # Platform collisions
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -92,35 +93,35 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
-        # Collision with enemies = game over
+        # Enemy collisions
         for enemy in enemies:
-            if player.get_rect().colliderect(enemy):
+            if player.get_rect().colliderect(enemy.rect):
                 game_over_sound.play()
                 return show_game_over(screen, font, max_height)
 
+        # Drawing
         draw_background(screen)
-        for p in platforms:
-            p.draw(screen)
+        for platform in platforms:
+            platform.draw(screen)
         for enemy in enemies:
-            pygame.draw.rect(screen, (255, 0, 0), enemy)
+            enemy.update()
+            screen.blit(enemy.image, enemy.rect)
         player.draw(screen)
 
-        # Score
+        # Score display
         score_text = font.render(f"Score: {max_height}", True, (0, 0, 0))
         screen.blit(score_text, (10, 10))
 
-        # Game over check
         if player.y > screen_height:
             game_over_sound.play()
             return show_game_over(screen, font, max_height)
 
         pygame.display.update()
-    return None
 
+    return None
 
 def show_game_over(screen, font, score):
     clock = pygame.time.Clock()
-    running = True
     high_score = load_high_score()
     if score > high_score:
         save_high_score(score)
@@ -128,8 +129,11 @@ def show_game_over(screen, font, score):
 
     blink = True
     blink_timer = 0
+    running = True
+
     while running:
         screen.fill((0, 0, 0))
+
         text = font.render("\U0001FAA6 Game Over", True, (255, 0, 0))
         score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         hi_score_text = font.render(f"High Score: {high_score}", True, (180, 180, 255))
@@ -142,7 +146,6 @@ def show_game_over(screen, font, score):
 
         if blink:
             screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, 200))
-
         screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 270))
         screen.blit(hi_score_text, (screen.get_width() // 2 - hi_score_text.get_width() // 2, 310))
         screen.blit(retry_text, (screen.get_width() // 2 - retry_text.get_width() // 2, 350))
