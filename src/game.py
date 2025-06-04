@@ -5,7 +5,7 @@ from random import randint
 from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
 from src.start import draw_background
-from src.sprites.enemy_1 import Monster
+from src.sprites.bettle import Bettle
 
 HIGHSCORE_FILE = "highscore.txt"
 ENEMY_SIZE = 50
@@ -58,7 +58,7 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
                     break
 
         if not collides: #create enemy
-            enemy = Monster(game=game, x=x, y=y)
+            enemy = Bettle(game=game, x=x, y=y)
             enemies.append(enemy)
 
         attempts += 1
