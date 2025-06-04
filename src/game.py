@@ -35,7 +35,6 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
         test_rect = pygame.Rect(x,y, ENEMY_SIZE, ENEMY_SIZE)
 
         collides = False
-
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height) #build a rect from the coordinates of the platform
 
@@ -66,11 +65,31 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
 
     return enemies
 
+def draw_animated_background(screen, bg_layers, scroll_offsets, scroll_speeds):
+    screen_width = screen.get_width()
+    for i, layer in enumerate(bg_layers):
+        scroll_offsets[i] = (scroll_offsets[i] + scroll_speeds[i]) % screen_width
+        x = -scroll_offsets[i]
+        screen.blit(layer, (x, 0))
+        screen.blit(layer, (x + screen_width, 0))
+
 def run_game():
     pygame.init()
     pygame.mixer.init()
     screen_width, screen_height = 600, 750
     screen = pygame.display.set_mode((screen_width, screen_height))
+
+    # Load background layers AFTER display is set
+    bg_layers = [
+        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/1.png").convert_alpha(),
+        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/2.png").convert_alpha(),
+        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/3.png").convert_alpha(),
+        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/5.png").convert_alpha(),
+        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/6.png").convert_alpha()
+    ]
+    scroll_offsets = [0 for _ in bg_layers]
+    scroll_speeds = [0.2, 0.4, 0.6, 0.8, 1.2]
+
     clock = pygame.time.Clock()
 
     # Load sounds and music
@@ -91,7 +110,7 @@ def run_game():
 
     # Load icons
     pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
-    info_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
+    info_icon = pygame.image.load("assets/images/info_btn.svg").convert_alpha()
     pause_icon = pygame.transform.scale(pause_icon, (40, 40))
     info_icon = pygame.transform.scale(info_icon, (40, 40))
     logo = pygame.image.load("assets/images/logo.webp").convert_alpha()
@@ -103,7 +122,7 @@ def run_game():
 
     # Flags
     paused = False
-
+    show_info = False
     start_y = player.y
     max_height = 0
     notif_timer = 0
@@ -116,51 +135,52 @@ def run_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+            elif not paused and event.type == pygame.MOUSEBUTTONDOWN:
                 if pause_rect.collidepoint(event.pos):
-                    paused = not paused
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not player.is_jumping and not paused:
+                    paused = True
+                elif info_rect.collidepoint(event.pos):
+                    show_info = not show_info
+            elif not paused and event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and not player.is_jumping:
                     player.jump()
                     jump_sound.play()
 
-        # Draw buttons
-        screen.blit(pause_icon, pause_rect)
-        screen.blit(info_icon, info_rect)
+
 
         if paused:
-            pygame.draw.rect(screen, (0, 0, 0, 128), (0, 0, screen_width, screen_height))
-            pause_text = font.render("⏸️ Game Paused", True, (255, 255, 255))
-            screen.blit(pause_text, (screen_width // 2 - pause_text.get_width() // 2, screen_height // 2))
-            pygame.display.update()
+            resume_btn, quit_btn = show_pause_menu(screen, screen_width, screen_height, pause_font)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if resume_btn.collidepoint(event.pos):
+                        paused = False
+                        pygame.time.wait(200)
+                    elif quit_btn.collidepoint(event.pos):
+                        pygame.quit()
+                        exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    paused = False
+            clock.tick(60)
             continue
 
-        if info_icon:
-            pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
-            info_lines = [
-                "🎮 SkyDodo Instructions:",
-                "- SPACE to jump",
-                "- Avoid red enemies",
-                "- Reach the sky!",
-                "",
-                "Click 'i' to hide this panel."
-            ]
-            for i, line in enumerate(info_lines):
-                line_surface = font.render(line, True, (0, 0, 0))
-                screen.blit(line_surface, (70, 220 + i * 30))        # Game logic
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
 
-        # Platform updates
         for p in platforms:
             p.update()
 
-        # Score update
-        height_climbed = max(0, start_y - player.y)
-        max_height = int(height_climbed)
+        height_climbed = int(start_y - player.y)
+        if height_climbed > max_height:
+            max_height = height_climbed
 
-        # Screen scrolling
+        difficulty_level = max_height // 300
+        enemy_speed = 2 + difficulty_level
+        platform_speed = 2 + difficulty_level
+        gravity_scale = 0.6 + 0.1 * difficulty_level
+
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
             player.y = screen_height // 3
@@ -172,7 +192,6 @@ def run_game():
                     enemy.rect.y = -ENEMY_SIZE
                     enemy.rect.x = randint(50, screen_width - ENEMY_SIZE - 50)
 
-        # Platform collision
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -182,17 +201,17 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
-        # Enemy collisions
         for enemy in enemies:
             if player.get_rect().colliderect(enemy.rect):
                 game_over_sound.play()
                 pygame.mixer.music.stop()
-                return show_game_over(screen, font, max_height)
-            if abs(enemy.rect.y - player.y) < 150:
-                notif_message = "⚠ Enemy nearby!"
-                notif_timer = pygame.time.get_ticks()
+                return show_game_over(screen, font, max_height, bg_layers, scroll_offsets, scroll_speeds)
 
-        # Drawing
+        danger_nearby = any(abs(enemy.rect.y - player.y) < 150 for enemy in enemies)
+        if danger_nearby:
+            notif_message = "⚠ Enemy nearby!"
+            notif_timer = pygame.time.get_ticks()
+
         draw_background(screen)
         for platform in platforms:
             platform.draw(screen)
@@ -201,28 +220,48 @@ def run_game():
             screen.blit(enemy.image, enemy.rect)
         player.draw(screen)
 
-        # Score display
-        score_text = font.render(f"Score: {max_height}", True, (0, 0, 0))
-        screen.blit(score_text, (10, 10))
+        if show_info:
+            pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
+            info_lines = [
+                "🎮 SkyDodo Instructions:",
+                "- SPACE to jump",
+                "- Avoid red enemies",
+                "- Reach the sky!",
+                "",
+                "Click 'i' to hide this panel."
+            ]
+            for i, line in enumerate(info_lines):
+                line_surface = font.render(line, True, (0, 0, 0))
+                screen.blit(line_surface, (70, 220 + i * 30))
 
-        # Notification display
         if notif_message and pygame.time.get_ticks() - notif_timer < 2000:
-            notif_text = notif_font.render(notif_message, True, (255, 100, 100))
-            screen.blit(notif_text, (screen_width // 2 - notif_text.get_width() // 2, 40))
-        else:
+            notif_bg = pygame.Surface((300, 40), pygame.SRCALPHA)
+            notif_bg.fill((0, 0, 0, 180))
+            notif_text = notif_font.render(notif_message, True, (255, 200, 200))
+            notif_bg_rect = notif_bg.get_rect(center=(screen_width // 2, 40))
+            screen.blit(notif_bg, notif_bg_rect)
+            screen.blit(notif_text, (notif_bg_rect.centerx - notif_text.get_width() // 2,
+                                     notif_bg_rect.centery - notif_text.get_height() // 2))
+        elif notif_message:
             notif_message = ""
 
-        # Game over check (falling off screen)
+        score_text = font.render(f"Score: {max_height}", True, (0, 0, 0))
+        level_text = font.render(f"Lvl: {difficulty_level + 1}", True, (0, 0, 0))
+        screen.blit(score_text, (10, 10))
+        screen.blit(level_text, (10, 40))
+
+        screen.blit(pause_icon, pause_rect)
+        screen.blit(info_icon, info_rect)
+
         if player.y > screen_height:
             pygame.mixer.music.stop()
             game_over_sound.play()
-            return show_game_over(screen, font, max_height)
+            return show_game_over(screen, font, max_height, bg_layers, scroll_offsets, scroll_speeds)
 
         pygame.display.update()
     return None
 
-
-def show_game_over(screen, font, score):
+def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds):
     clock = pygame.time.Clock()
     running = True
     high_score = load_high_score()
@@ -230,14 +269,6 @@ def show_game_over(screen, font, score):
         save_high_score(score)
         high_score = score
 
-    # Load background and player character
-    bg = pygame.image.load("assets/images/blueback.jpg").convert()
-    logo = pygame.image.load("assets/images/logo.webp").convert_alpha()
-    logo = pygame.transform.scale(logo, (200, 100))  # adjust as needed
-    player_img = pygame.image.load("assets/images/dodo_sprite_sheet.png").convert_alpha()
-    player_img = pygame.transform.scale(player_img, (80, 80))  # adjust size as needed
-
-    # Fonts
     title_font = pygame.font.SysFont("Comic Sans MS", 64, bold=True)
     score_font = pygame.font.SysFont("Comic Sans MS", 32)
     hint_font = pygame.font.SysFont("Comic Sans MS", 24)
@@ -245,9 +276,11 @@ def show_game_over(screen, font, score):
     blink = True
     blink_timer = 0
     while running:
-        screen.blit(bg, (0, 0))
+        # draw_animated_background(screen, bg_layers, scroll_offsets, scroll_speeds)
+        # overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        # overlay.fill((0, 0, 0, 100))
+        # screen.blit(overlay, (0, 0))
 
-        # Draw "Game Over" Title
         title = title_font.render("GAME OVER", True, (255, 0, 0))
         shadow = title_font.render("GAME OVER", True, (0, 0, 0))
         title_x = screen.get_width() // 2 - title.get_width() // 2
@@ -262,19 +295,13 @@ def show_game_over(screen, font, score):
         screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 200))
         screen.blit(high_score_text, (screen.get_width() // 2 - high_score_text.get_width() // 2, 240))
 
-        # Retry Instruction
         hint = hint_font.render("Press SPACE to Retry or ESC to Quit", True, (80, 80, 80))
         screen.blit(hint, (screen.get_width() // 2 - hint.get_width() // 2, 300))
 
-        # Draw player character
-        screen.blit(player_img, (screen.get_width() // 2 - player_img.get_width() // 2, 380))
-
-        # Blink title
         blink_timer += clock.get_time()
         if blink_timer > 500:
             blink = not blink
             blink_timer = 0
-
 
         pygame.display.flip()
 
@@ -291,3 +318,7 @@ def show_game_over(screen, font, score):
 
         clock.tick(60)
     return None
+    scroll_offsets[i] = (scroll_offsets[i] + scroll_speeds[i]) % screen_height
+    y = -scroll_offsets[i]
+    screen.blit(layer, (0, y))
+    screen.blit(layer, (0, y + screen_height))
