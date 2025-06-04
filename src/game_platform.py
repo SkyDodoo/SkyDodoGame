@@ -2,6 +2,7 @@ import pygame
 import random
 
 platform_img = pygame.image.load("assets/images/platform.png")
+moving_platform_img = pygame.image.load("assets/images/moving_platform_cloud.png")
 
 #Class for Platforms
 class Platform:
@@ -99,7 +100,8 @@ def recycle_platforms(platforms, screen_width, screen_height):
 
                     move_speed = random.randint(2, 4) if moving else 0
 
-                    platforms.append(Platform(new_x, new_y, platform_width, platform_height, True, move_range, move_speed, image=platform_img))
+                    image = moving_platform_img if moving else platform_img
+                    platforms.append(Platform(new_x, new_y, platform_width, platform_height, True, move_range, move_speed, image=image))
                     break
 
 #Checking if platforms are overlapping
