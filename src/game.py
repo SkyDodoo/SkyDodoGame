@@ -24,8 +24,10 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
     enemies = []
     attempts = 0 #count for attempts (place enemy)
     min_distance = 200 #min distance between the enemies
+    min_platform_dist_x = 150
+    min_platform_dist_y = 40
 
-    while len(enemies) < num and attempts < 100: #until enough players or max 100 attempts
+    while len(enemies) < num and attempts < 1000: #until enough players or max 100 attempts
         x = randint(50, screen_width - ENEMY_SIZE -50)
         y = randint(100, screen_height -200)
 
@@ -33,9 +35,19 @@ def spawn_enemies(num, screen_width, screen_height, game, platforms):
         test_rect = pygame.Rect(x,y, ENEMY_SIZE, ENEMY_SIZE)
 
         collides = False
+
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height) #build a rect from the coordinates of the platform
+
+            # no overlap with platform
             if test_rect.colliderect(plat_rect):
+                collides = True
+                break
+
+            # distance enemy - platform
+            dx = max(0, max(p.x -(x+ ENEMY_SIZE), x - (p.x + p.width)))
+            dy= max(0, max(p.y - (y + ENEMY_SIZE), y - (p.y + p.height)))
+            if dx < min_platform_dist_x and dy < min_platform_dist_y:
                 collides = True
                 break
 
