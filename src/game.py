@@ -20,13 +20,29 @@ def save_high_score(score):
     with open(HIGHSCORE_FILE, "w") as f:
         f.write(str(score))
 
-def spawn_enemies(num, screen_width, screen_height, game):
+def spawn_enemies(num, screen_width, screen_height, game, platforms):
     enemies = []
-    for _ in range(num):
-        x = randint(50, screen_width - ENEMY_SIZE - 50)
-        y = randint(100, screen_height - 200)
-        enemy = Monster(game=game, x=x, y=y)
-        enemies.append(enemy)
+    attempts = 0 #count for attempts (place enemie)
+
+    while len(enemies) < num and attempts < 100: #until enough players or max 100 attempts
+        x = randint(50, screen_width - ENEMY_SIZE -50)
+        y = randint(100, screen_height -200)
+
+        # creating a test for enemie
+        test_rect = pygame.Rect(x,y, ENEMY_SIZE, ENEMY_SIZE)
+
+        collides = False
+        for p in platforms:
+            plat_rect = pygame.Rect(p.x, p.y, p.width, p.height) #build a rect from the coordinates of the platform
+            if test_rect.colliderect(plat_rect):
+                collides = True
+                break
+
+        if not collides: #create enemy
+            enemy = Monster(game=game, x=x, y=y)
+            enemies.append(enemy)
+        attempts += 1
+
     return enemies
 
 def run_game():
@@ -50,6 +66,7 @@ def run_game():
     # Game objects
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
+    enemies = spawn_enemies(3, screen_width, screen_height, screen, platforms)
 
     #Load UI Overlay - pause, buttons, info
     pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
@@ -59,7 +76,6 @@ def run_game():
 
     # Game state
     paused = False
-    enemies = spawn_enemies(3, screen_width, screen_height, screen)
 
     start_y = player.y
     max_height = 0
