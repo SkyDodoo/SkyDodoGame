@@ -6,7 +6,6 @@ from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
 from src.start import draw_background
 from random import randint
-
 HIGHSCORE_FILE = "highscore.txt"
 ENEMY_SIZE = 50
 
@@ -36,42 +35,68 @@ def run_game():
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
 
+    # Load sounds and music
+    pygame.mixer.music.load("assets/sounds/background_music.mp3")
+    pygame.mixer.music.play(-1)
     jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
+    game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
 
+    # Fonts
+    font = pygame.font.SysFont("Arial", 24)
+    pause_font = pygame.font.SysFont("Arial", 48)
+    notif_font = pygame.font.SysFont("Arial", 24)
+
+    # Game objects
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
     enemies = spawn_enemies(3, screen_width, screen_height)
-    font = pygame.font.SysFont("Arial", 24)
+
+    # Game state
+    paused = False
     start_y = player.y
     max_height = 0
-    game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
+    notif_timer = 0
+    notif_message = ""
 
     running = True
     while running:
-        clock.tick(60) / 1000
+        dt = clock.tick(60) / 1000
 
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not player.is_jumping:
-                    player.jump()  # Removed 'stronger=True'
+                if event.key == pygame.K_SPACE and not player.is_jumping and not paused:
+                    player.jump()
                     jump_sound.play()
+                elif event.key == pygame.K_p:
+                    paused = not paused
+
+        if paused:
+            draw_background(screen)
+            overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 180))
+            screen.blit(overlay, (0, 0))
+            pause_text = pause_font.render("PAUSED", True, (255, 255, 255))
+            screen.blit(pause_text, (screen_width // 2 - pause_text.get_width() // 2, screen_height // 2))
+            pygame.display.flip()
+            continue
+
+        # Game logic
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
 
-        #Moving Platforms
+        # Platform updates
         for p in platforms:
             p.update()
 
-
-        # Update score
+        # Score update
         height_climbed = max(0, start_y - player.y)
-        if height_climbed > max_height:
-            max_height = int(height_climbed)
+        max_height = int(height_climbed)
 
-        # Scroll screen
+        # Screen scrolling
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
             player.y = screen_height // 3
@@ -83,7 +108,7 @@ def run_game():
                     e.y = -ENEMY_SIZE
                     e.x = randint(50, screen_width - ENEMY_SIZE - 50)
 
-        # Collision with platforms
+        # Platform collision
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -93,12 +118,17 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
-        # Collision with enemies = game over
+        # Enemy collision and notifications
         for enemy in enemies:
             if player.get_rect().colliderect(enemy):
+                pygame.mixer.music.stop()
                 game_over_sound.play()
                 return show_game_over(screen, font, max_height)
+            if abs(enemy.y - player.y) < 150:
+                notif_message = "⚠ Enemy nearby!"
+                notif_timer = pygame.time.get_ticks()
 
+        # Drawing
         draw_background(screen)
         for p in platforms:
             p.draw(screen)
@@ -106,12 +136,20 @@ def run_game():
             pygame.draw.rect(screen, (255, 0, 0), enemy)
         player.draw(screen)
 
-        # Score
+        # Score display
         score_text = font.render(f"Score: {max_height}", True, (0, 0, 0))
         screen.blit(score_text, (10, 10))
 
-        # Game over check
+        # Notification display
+        if notif_message and pygame.time.get_ticks() - notif_timer < 2000:
+            notif_text = notif_font.render(notif_message, True, (255, 100, 100))
+            screen.blit(notif_text, (screen_width // 2 - notif_text.get_width() // 2, 40))
+        else:
+            notif_message = ""
+
+        # Game over check (falling off screen)
         if player.y > screen_height:
+            pygame.mixer.music.stop()
             game_over_sound.play()
             return show_game_over(screen, font, max_height)
 
@@ -129,6 +167,8 @@ def show_game_over(screen, font, score):
 
     # Load background and player character
     bg = pygame.image.load("assets/images/blueback.jpg").convert()
+    logo = pygame.image.load("assets/images/logo.webp").convert_alpha()
+    logo = pygame.transform.scale(logo, (200, 100))  # adjust as needed
     player_img = pygame.image.load("assets/images/dodo_sprite_sheet.png").convert_alpha()
     player_img = pygame.transform.scale(player_img, (80, 80))  # adjust size as needed
 
@@ -150,6 +190,7 @@ def show_game_over(screen, font, score):
         screen.blit(shadow, (title_x + 2, 102))
         if blink:
             screen.blit(title, (title_x, 100))
+        screen.blit(logo, (screen.get_width() // 2 - logo.get_width() // 2, 30))
 
         # Draw Scores
         score_text = score_font.render(f"Score: {score}", True, (0, 0, 0))
