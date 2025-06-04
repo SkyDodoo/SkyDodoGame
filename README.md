@@ -20,6 +20,19 @@ Glushenkova Mariia
 
 ---
 
+## 🚀 Run Locally
+
+```bash
+# 1. Clone the repo
+git clone https://gitlab.com/yourusername/skydodo.git
+cd skydodo
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Launch the game
+python main.py
+
 ### 📦 Folder Structure
 
 ```

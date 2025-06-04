@@ -9,7 +9,7 @@ pygame.init()
 pygame.mixer.init()
 
 # Background music
-pygame.mixer.music.load("./assets/sounds/music.mp3")
+pygame.mixer.music.load("assets/sounds/background_music.mp3")
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(-1)  # endless loop
 
