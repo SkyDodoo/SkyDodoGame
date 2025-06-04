@@ -51,6 +51,12 @@ def run_game():
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
 
+    #Load UI Overlay - pause, buttons, info
+    pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
+    pause_icon = pygame.transform.scale(pause_icon, (40, 40))
+    logo = pygame.image.load("assets/images/logo.webp").convert_alpha()
+    logo = pygame.transform.scale(logo, (200, 80))
+
     # Game state
     paused = False
     enemies = spawn_enemies(3, screen_width, screen_height, screen)
