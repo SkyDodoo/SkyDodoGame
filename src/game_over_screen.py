@@ -19,20 +19,16 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
     blink_timer = 0
     while running:
         # Animated background
-        screen_height = screen.get_height()
-        for i, layer in enumerate(bg_layers):
-            scroll_offsets[i] = (scroll_offsets[i] + scroll_speeds[i]) % screen_height
-            y = -scroll_offsets[i]
-            screen.blit(layer, (0, y))
-            screen.blit(layer, (0, y + screen_height))
+        # screen_height = screen.get_height()
+        # for i, layer in enumerate(bg_layers):
+        #     scroll_offsets[i] = (scroll_offsets[i] + scroll_speeds[i]) % screen_height
+        #     y = -scroll_offsets[i]
+        #     screen.blit(layer, (0, y))
+        #     screen.blit(layer, (0, y + screen_height))
 
         # Light blue transparent overlay
         blue_overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-        blue_overlay.fill((50, 100, 200, 60))  # light blue with alpha
         screen.blit(blue_overlay, (0, 0))
-
-        # Player sprite at center for visual continuity
-        player.draw(screen)
 
         # Title
         title = title_font.render("GAME OVER", True, (255, 0, 0))
