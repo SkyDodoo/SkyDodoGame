@@ -1,6 +1,7 @@
 # game.py
 import pygame
 import os
+
 from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
 from src.start import draw_background
@@ -126,26 +127,48 @@ def show_game_over(screen, font, score):
         save_high_score(score)
         high_score = score
 
+    # Load background and player character
+    bg = pygame.image.load("assets/images/blueback.jpg").convert()
+    player_img = pygame.image.load("assets/images/dodo_sprite_sheet.png").convert_alpha()
+    player_img = pygame.transform.scale(player_img, (80, 80))  # adjust size as needed
+
+    # Fonts
+    title_font = pygame.font.SysFont("Comic Sans MS", 64, bold=True)
+    score_font = pygame.font.SysFont("Comic Sans MS", 32)
+    hint_font = pygame.font.SysFont("Comic Sans MS", 24)
+
     blink = True
     blink_timer = 0
-    while running:
-        screen.fill((0, 0, 0))
-        text = font.render("\U0001FAA6 Game Over", True, (255, 0, 0))
-        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
-        hi_score_text = font.render(f"High Score: {high_score}", True, (180, 180, 255))
-        retry_text = font.render("Press SPACE to Retry or ESC to Quit", True, (200, 200, 200))
 
+    while running:
+        screen.blit(bg, (0, 0))
+
+        # Draw "Game Over" Title
+        title = title_font.render("GAME OVER", True, (255, 0, 0))
+        shadow = title_font.render("GAME OVER", True, (0, 0, 0))
+        title_x = screen.get_width() // 2 - title.get_width() // 2
+        screen.blit(shadow, (title_x + 2, 102))
+        if blink:
+            screen.blit(title, (title_x, 100))
+
+        # Draw Scores
+        score_text = score_font.render(f"Score: {score}", True, (0, 0, 0))
+        high_score_text = score_font.render(f"High Score: {high_score}", True, (20, 40, 200))
+        screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 200))
+        screen.blit(high_score_text, (screen.get_width() // 2 - high_score_text.get_width() // 2, 240))
+
+        # Retry Instruction
+        hint = hint_font.render("Press SPACE to Retry or ESC to Quit", True, (80, 80, 80))
+        screen.blit(hint, (screen.get_width() // 2 - hint.get_width() // 2, 300))
+
+        # Draw player character
+        screen.blit(player_img, (screen.get_width() // 2 - player_img.get_width() // 2, 380))
+
+        # Blink title
         blink_timer += clock.get_time()
         if blink_timer > 500:
             blink = not blink
             blink_timer = 0
-
-        if blink:
-            screen.blit(text, (screen.get_width() // 2 - text.get_width() // 2, 200))
-
-        screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 270))
-        screen.blit(hi_score_text, (screen.get_width() // 2 - hi_score_text.get_width() // 2, 310))
-        screen.blit(retry_text, (screen.get_width() // 2 - retry_text.get_width() // 2, 350))
 
         pygame.display.flip()
 
