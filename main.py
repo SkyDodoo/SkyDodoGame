@@ -3,7 +3,15 @@ import pygame
 import sys
 import src.start  # background module
 from src.game import run_game
+import os
+
 pygame.init()
+pygame.mixer.init()
+
+# Background music
+pygame.mixer.music.load("assets/sounds/background_music.mp3")
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play(-1)  # endless loop
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 750
@@ -17,6 +25,16 @@ clock = pygame.time.Clock()
 src.start.load_assets()
 src.start.reset_background()
 
+# Load and scale logo image
+logo_path = os.path.join("assets", "images", "logo.webp")
+logo_img_original = pygame.image.load(logo_path).convert_alpha()
+
+# Set your desired logo size here
+LOGO_WIDTH = 250
+LOGO_HEIGHT = 200
+logo_img = pygame.transform.smoothscale(logo_img_original, (LOGO_WIDTH, LOGO_HEIGHT))
+
+
 def draw_button(text, x, y, width, height):
     rect = pygame.Rect(x, y, width, height)
     pygame.draw.rect(screen, (70, 130, 180), rect)
@@ -25,17 +43,23 @@ def draw_button(text, x, y, width, height):
     screen.blit(label, label_rect)
     return rect
 
+
 def main_menu():
     running = True
     while running:
         screen.fill((0, 0, 0))
         src.start.draw_background(screen)
 
-        title = font.render("SkyDodo", True, (255, 255, 255))
-        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 120))
+        # Draw resized logo and position it
+        logo_rect = logo_img.get_rect(center=(SCREEN_WIDTH // 2, 180))
+        screen.blit(logo_img, logo_rect)
 
-        start_btn = draw_button("Start Game", 200, 300, 200, 60)
-        exit_btn = draw_button("Exit", 200, 400, 200, 60)
+        # Adjusted: increase spacing to move buttons lower
+        spacing_from_logo = 60  # Increased from 20 to 60
+        spacing_between_buttons = 90  # Increased from 80 to 90
+
+        start_btn = draw_button("Start Game", 200, logo_rect.bottom + spacing_from_logo, 200, 60)
+        exit_btn = draw_button("Exit", 200, logo_rect.bottom + spacing_from_logo + spacing_between_buttons, 200, 60)
 
         pygame.display.flip()
 
@@ -44,7 +68,6 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
-
                     run_game()
                 elif exit_btn.collidepoint(event.pos):
                     running = False
@@ -53,5 +76,7 @@ def main_menu():
 
     pygame.quit()
     sys.exit()
+
+
 
 main_menu()
