@@ -50,7 +50,6 @@ def run_game():
     # Game objects
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
-    enemies = spawn_enemies(3, screen_width, screen_height)
 
     # Game state
     paused = False
@@ -127,7 +126,7 @@ def run_game():
                 game_over_sound.play()
                 pygame.mixer.music.stop()
                 return show_game_over(screen, font, max_height)
-            if abs(enemy.y - player.y) < 150:
+            if abs(enemy.rect.y - player.y) < 150:
                 notif_message = "⚠ Enemy nearby!"
                 notif_timer = pygame.time.get_ticks()
 
