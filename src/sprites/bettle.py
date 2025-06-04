@@ -1,7 +1,7 @@
 from src.sprites.base_enemy import BaseEnemy
 import os
 
-class Monster(BaseEnemy):
+class Bettle(BaseEnemy):
     def __init__(self, game, x=300, y=400):
         frame_paths = [
             os.path.join("assets", "images", "enemies", f"bettle{i}.png")
