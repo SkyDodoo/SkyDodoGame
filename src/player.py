@@ -9,7 +9,7 @@ class Player:
         self.x = x
         self.y = y
         self.vel_y = 0
-        self.gravity = 0.8
+        self.gravity = 0.6
         self.is_jumping = False
         self.direction = "idle"  # animation state: 'fly', 'jump', 'rotate'
         self.facing_right = False  # False = flip image when drawing

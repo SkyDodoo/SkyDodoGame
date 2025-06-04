@@ -77,13 +77,19 @@ def run_game():
     platforms = generate_platforms(screen_width, screen_height)
     enemies = spawn_enemies(3, screen_width, screen_height, screen, platforms)
 
-    #Load UI Overlay - pause, buttons, info
+    # Load icons
     pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
+    info_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
     pause_icon = pygame.transform.scale(pause_icon, (40, 40))
+    info_icon = pygame.transform.scale(info_icon, (40, 40))
     logo = pygame.image.load("assets/images/logo.webp").convert_alpha()
     logo = pygame.transform.scale(logo, (200, 80))
 
-    # Game state
+    # Button positions
+    pause_rect = pause_icon.get_rect(topleft=(screen_width - 50, 10))
+    info_rect = info_icon.get_rect(topleft=(screen_width - 100, 10))
+
+    # Flags
     paused = False
 
     start_y = player.y
@@ -95,28 +101,43 @@ def run_game():
     while running:
         dt = clock.tick(60) / 1000
 
-        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if pause_rect.collidepoint(event.pos):
+                    paused = not paused
+                elif info_rect.collidepoint(event.pos):
+                    show_info = not show_info
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not player.is_jumping and not paused:
                     player.jump()
                     jump_sound.play()
-                elif event.key == pygame.K_p:
-                    paused = not paused
+
+        # Draw buttons
+        screen.blit(pause_icon, pause_rect)
+        screen.blit(info_icon, info_rect)
 
         if paused:
-            draw_background(screen)
-            overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 180))
-            screen.blit(overlay, (0, 0))
-            pause_text = pause_font.render("PAUSED", True, (255, 255, 255))
+            pygame.draw.rect(screen, (0, 0, 0, 128), (0, 0, screen_width, screen_height))
+            pause_text = font.render("⏸️ Game Paused", True, (255, 255, 255))
             screen.blit(pause_text, (screen_width // 2 - pause_text.get_width() // 2, screen_height // 2))
-            pygame.display.flip()
+            pygame.display.update()
             continue
 
-        # Game logic
+        if show_info:
+            pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
+            info_lines = [
+                "🎮 SkyDodo Instructions:",
+                "- SPACE to jump",
+                "- Avoid red enemies",
+                "- Reach the sky!",
+                "",
+                "Click 'i' to hide this panel."
+            ]
+            for i, line in enumerate(info_lines):
+                line_surface = font.render(line, True, (0, 0, 0))
+                screen.blit(line_surface, (70, 220 + i * 30))        # Game logic
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()

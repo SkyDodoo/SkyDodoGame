@@ -70,8 +70,8 @@ def recycle_platforms(platforms, screen_width, screen_height):
     platform_width = 100
     platform_height = 25
     max_attempts = 10
-    min_vertical_distance = 80
-    max_vertical_distance = 100
+    min_vertical_distance = 50
+    max_vertical_distance = 80
     max_horizontal_distance = 120
 
     for p in platforms[:]:
