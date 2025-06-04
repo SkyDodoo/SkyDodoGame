@@ -41,7 +41,7 @@ class Platform:
         else:
             pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, self.width, self.height))
 
-        if self.y >= screen.get_height() - 30:
+        if self.y >= screen.get_height() - 30 and self.is_ground:
             ground_img = pygame.image.load("assets/images/ground_new.png").convert_alpha()
             ground_img = pygame.transform.scale(ground_img, (screen.get_width(), ground_img.get_height()))
             screen.blit(ground_img, (0, 750 - 80))
@@ -49,7 +49,7 @@ class Platform:
 def generate_platforms(screen_width, screen_height, num=8):
     platforms = []
 
-    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False)
+    ground = Platform(x=0, y=screen_height - 20, width=screen_width, height=25, moving=False, is_ground=True)
     platforms.append(ground)
 
     platform_width = 100
@@ -63,7 +63,6 @@ def generate_platforms(screen_width, screen_height, num=8):
 def scroll_platforms(platforms, scroll_amount):
     for p in platforms:
         p.y += scroll_amount
-        p.update()
 
 #delete platforms that are out of the screen and append new ones
 def recycle_platforms(platforms, screen_width, screen_height):
