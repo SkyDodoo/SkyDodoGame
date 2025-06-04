@@ -287,7 +287,7 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
         screen.blit(shadow, (title_x + 2, 102))
         if blink:
             screen.blit(title, (title_x, 100))
-        screen.blit(logo, (screen.get_width() // 2 - logo.get_width() // 2, 30))
+        # screen.blit(logo, (screen.get_width() // 2 - logo.get_width() // 2, 30))
 
         # Draw Scores
         score_text = score_font.render(f"Score: {score}", True, (0, 0, 0))
