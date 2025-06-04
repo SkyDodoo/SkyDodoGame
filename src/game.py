@@ -107,8 +107,6 @@ def run_game():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if pause_rect.collidepoint(event.pos):
                     paused = not paused
-                elif info_rect.collidepoint(event.pos):
-                    show_info = not show_info
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and not player.is_jumping and not paused:
                     player.jump()
@@ -125,7 +123,7 @@ def run_game():
             pygame.display.update()
             continue
 
-        if show_info:
+        if info_icon:
             pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
             info_lines = [
                 "🎮 SkyDodo Instructions:",
