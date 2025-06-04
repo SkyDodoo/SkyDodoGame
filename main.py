@@ -4,6 +4,12 @@ import sys
 import src.start  # background module
 from src.game import run_game
 pygame.init()
+pygame.mixer.init()
+
+# background music
+pygame.mixer.music.load("./assets/sounds/music.mp3")
+pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.play(-1) # endless loop
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 750
@@ -44,7 +50,6 @@ def main_menu():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if start_btn.collidepoint(event.pos):
-
                     run_game()
                 elif exit_btn.collidepoint(event.pos):
                     running = False
