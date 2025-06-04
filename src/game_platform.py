@@ -2,7 +2,7 @@ import pygame
 import random
 
 platform_img = pygame.image.load("assets/images/platform.png")
-moving_platform_img = pygame.image.load("assets/images/moving_platform_cloud.png")
+moving_platform_img = pygame.image.load("assets/images/moving_platform_cloud_lighter.png")
 
 #Class for Platforms
 class Platform:
