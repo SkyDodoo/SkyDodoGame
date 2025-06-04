@@ -11,9 +11,9 @@ class Player:
         self.vel_y = 0
         self.gravity = 0.8
         self.is_jumping = False
-        self.direction = "idle"  # 'fly', 'jump', 'rotate'
+        self.direction = "idle"  # animation state: 'fly', 'jump', 'rotate'
+        self.facing_right = False  # False = flip image when drawing
 
-        # Load animations from multiple rows
         self.animations = self.load_animation_rows("assets/images/BirdSprite.png", 16, 16)
         self.current_row = 0
         self.current_frame = 0
@@ -26,7 +26,6 @@ class Player:
         sheet_width, sheet_height = sprite_sheet.get_size()
 
         rows = sheet_height // frame_height
-        cols = sheet_width // frame_width  # total number of cols, not necessarily used
         max_valid_cols = 6  # manually set how many frames to load per row
 
         animations = []
@@ -45,11 +44,14 @@ class Player:
         if keys[pygame.K_LEFT]:
             self.x -= self.speed
             self.direction = "fly"
+            self.facing_right = True   # ← face left (normal)
         elif keys[pygame.K_RIGHT]:
             self.x += self.speed
             self.direction = "fly"
+            self.facing_right = False  # → face right (flipped)
         else:
             self.direction = "idle"
+
         self.x = max(0, min(self.x, screen_width - self.width))
 
     def apply_gravity(self):
@@ -66,12 +68,12 @@ class Player:
         self.direction = "jump"
 
     def update(self, dt):
-        # Select row based on direction
+        # Update animation row
         if self.direction == "idle":
             self.current_row = 0
         elif self.direction == "fly":
             self.current_row = 1
-        elif self.direction == "jump" or self.direction == "rotate":
+        elif self.direction in ("jump", "rotate"):
             self.current_row = 2
 
         # Animate
@@ -82,7 +84,10 @@ class Player:
             self.image = self.animations[self.current_row][self.current_frame]
 
     def draw(self, screen):
-        screen.blit(self.image, (self.x, self.y))
+        image = self.image
+        if not self.facing_right:
+            image = pygame.transform.flip(self.image, True, False)
+        screen.blit(image, (self.x, self.y))
 
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.width, self.height)
