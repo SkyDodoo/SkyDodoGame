@@ -14,3 +14,19 @@ class Monster(BaseEnemy):
             frame_paths=frame_paths,
             animation_speed=0.2
         )
+
+        self.start_x = x
+        self.move_range = 100
+        self.speed = 2
+        self.direction = 1
+
+    def update(self):
+        super().update()
+
+        self.rect.x += self.speed * self.direction
+
+        if self.rect.x > self.start_x + self.move_range:
+            self.direction = -1
+        elif self.rect.x < self.start_x - self.move_range:
+            self.direction = 1
+
