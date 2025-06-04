@@ -43,8 +43,8 @@ def run_game():
     info_icon = pygame.image.load("assets/images/info_btn.svg").convert_alpha()
     pause_icon = pygame.transform.scale(pause_icon, (40, 40))
     info_icon = pygame.transform.scale(info_icon, (40, 40))
-    pause_rect = pause_icon.get_rect(topleft=(screen_width - 50, 10))
-    info_rect = info_icon.get_rect(topleft=(screen_width - 100, 10))
+    pause_rect = pause_icon.get_rect(topleft=(screen_width - 50, 60))
+    info_rect = info_icon.get_rect(topleft=(screen_width - 100, 60))
 
     paused = False
     show_info = False

@@ -92,5 +92,5 @@ def draw_background(surface: pygame.Surface):
 
     # Draw fh.jpg in the top-right corner
     if fh_img:
-        fh_rect = fh_img.get_rect(topright=(SCREEN_WIDTH - 5, 30))
+        fh_rect = fh_img.get_rect(topright=(SCREEN_WIDTH - 0, 0))
         surface.blit(fh_img, fh_rect)
