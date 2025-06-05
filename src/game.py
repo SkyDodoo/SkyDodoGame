@@ -14,6 +14,9 @@ def run_game():
     from src.pause_menu import show_pause_menu
     from src.enemy_logic import spawn_enemies
 
+    # Init height for score
+    max_height = 0
+    scroll_offset = 0
     pygame.init()
     pygame.mixer.init()
     screen_width, screen_height = 600, 750
@@ -37,7 +40,7 @@ def run_game():
 
     player = Player(300, screen_height - 150)
     platforms = generate_platforms(screen_width, screen_height)
-    enemies = spawn_enemies(3, screen_width, screen_height, screen, platforms)
+    enemies = spawn_enemies(2.5, screen_width, screen_height, screen, platforms)
 
     pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
     info_icon = pygame.image.load("assets/images/info_btn.svg").convert_alpha()
@@ -90,6 +93,7 @@ def run_game():
 
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
+            scroll_offset += scroll
             player.y = screen_height // 3
             scroll_platforms(platforms, scroll)
             recycle_platforms(platforms, screen_width, screen_height)
@@ -120,10 +124,6 @@ def run_game():
                 run_game,
                 player
                 )
-        danger_nearby = any(abs(enemy.rect.y - player.y) < 150 for enemy in enemies)
-        if danger_nearby:
-            notif_message = "⚠ Enemy nearby!"
-            notif_timer = pygame.time.get_ticks()
 
         draw_background(screen)
         for platform in platforms:
@@ -146,26 +146,27 @@ def run_game():
             for i, line in enumerate(info_lines):
                 screen.blit(font.render(line, True, (0, 0, 0)), (70, 220 + i * 30))
 
-        if notif_message and pygame.time.get_ticks() - notif_timer < 2000:
-            notif_bg = pygame.Surface((300, 40), pygame.SRCALPHA)
-            notif_bg.fill((0, 0, 0, 180))
-            notif_text = notif_font.render(notif_message, True, (255, 200, 200))
-            notif_bg_rect = notif_bg.get_rect(center=(screen_width // 2, 40))
-            screen.blit(notif_bg, notif_bg_rect)
-            screen.blit(notif_text, (notif_bg_rect.centerx - notif_text.get_width() // 2,
-                                     notif_bg_rect.centery - notif_text.get_height() // 2))
-        elif notif_message:
-            notif_message = ""
+        score = int(scroll_offset)
+        if score > max_height:
+            max_height = score
 
-        screen.blit(font.render(f"Score: {max_height}", True, (0, 0, 0)), (10, 10))
+        screen.blit(font.render(f"Score: {score}", True, (0, 0, 0)), (10, 10))
         screen.blit(font.render(f"Lvl: {difficulty_level + 1}", True, (0, 0, 0)), (10, 40))
         screen.blit(pause_icon, pause_rect)
         screen.blit(info_icon, info_rect)
 
         if player.y > screen_height:
             pygame.mixer.music.stop()
+            scroll_offset += scroll
             game_over_sound.play()
-            return max_height
+            return show_game_over(
+                screen, font, max_height,
+                bg_layers, scroll_offsets, scroll_speeds,
+                save_high_score,
+                load_high_score,
+                run_game,
+                player
+            )
 
         pygame.display.update()
     return None
