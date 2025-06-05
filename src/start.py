@@ -126,8 +126,7 @@ def draw_overlay_ui(surface: pygame.Surface):
         info_lines = [
             "👨‍💻 Developer Info:",
             "SkyDodo Developers",
-            "- GitHub: github.com/mariia",
-            "- Email: mariia@example.com"
+            "- GitHub https://github.com/SkyDodoo/SkyDodoGame.git"
         ]
         pygame.draw.rect(surface, (240, 240, 240), (40, 100, 520, 120))
         for i, line in enumerate(info_lines):
