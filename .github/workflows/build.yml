@@ -1,0 +1,60 @@
+name: Build SkyDodo
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip zip
+          pip install pyinstaller
+      - name: Build for Linux
+        run: |
+          pyinstaller --onefile --add-data "assets:assets" main.py
+          mv dist/main SkyDodo-linux
+          zip -r SkyDodo_Linux.zip SkyDodo-linux assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkyDodo_Linux
+          path: SkyDodo_Linux.zip
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          python -m pip install pyinstaller
+      - name: Build for Windows
+        run: |
+          pyinstaller --onefile --add-data "assets;assets" main.py
+          ren dist\main.exe SkyDodo.exe
+          powershell Compress-Archive -Path SkyDodo.exe,assets -DestinationPath SkyDodo_Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkyDodo_Windows
+          path: SkyDodo_Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          pip3 install pyinstaller
+      - name: Build for macOS
+        run: |
+          pyinstaller --onefile --add-data "assets:assets" main.py
+          mv dist/main SkyDodo-macOS
+          zip -r SkyDodo_macOS.zip SkyDodo-macOS assets
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkyDodo_macOS
+          path: SkyDodo_macOS.zip
