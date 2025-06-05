@@ -58,16 +58,17 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
         if blink:
             screen.blit(title, (title_x, 100))
 
-        # Scores
+        # Draw current and high scores
         score_text = score_font.render(f"Score: {score}", True, (0, 0, 0))
         high_score_text = score_font.render(f"High Score: {high_score}", True, (20, 40, 200))
         screen.blit(score_text, (screen.get_width() // 2 - score_text.get_width() // 2, 200))
         screen.blit(high_score_text, (screen.get_width() // 2 - high_score_text.get_width() // 2, 240))
 
-        # Hint
+        # Show hint to the user
         hint = hint_font.render("Press SPACE to Retry or ESC to Quit", True, (80, 80, 80))
         screen.blit(hint, (screen.get_width() // 2 - hint.get_width() // 2, 300))
 
+        # Update blink timer
         blink_timer += clock.get_time()
         if blink_timer > 500:
             blink = not blink
@@ -75,6 +76,7 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
 
         pygame.display.flip()
 
+        # Handle input events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
