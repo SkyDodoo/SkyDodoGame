@@ -38,9 +38,8 @@ def show_pause_menu(screen, screen_width, screen_height, pause_font ):
         pygame.draw.rect(screen, (100, 200, 100), resume_btn, border_radius=12)
         pygame.draw.rect(screen, (200, 80, 80), quit_btn, border_radius=12)
 
-        # Render button labels
-        screen.blit(btn_font.render("▶ Resume", True, (255, 255, 255)), (resume_btn.x + 40, resume_btn.y + 10))
-        screen.blit(btn_font.render("⏻ Quit", True, (255, 255, 255)), (quit_btn.x + 60, quit_btn.y + 10))
+        screen.blit(btn_font.render("Resume", True, (255, 255, 255)), (resume_btn.x + 40, resume_btn.y + 10))
+        screen.blit(btn_font.render("Quit", True, (255, 255, 255)), (quit_btn.x + 60, quit_btn.y + 10))
 
         pygame.display.update()
 
