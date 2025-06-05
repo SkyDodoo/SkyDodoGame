@@ -1,8 +1,17 @@
 import pygame
 
-
+# Method: draw_overlay
+# screen - instance of the screen to draw on
+# overlay_type - string, either "pause" or "info", determines the content
+# font - Pygame font object used for rendering the title
+# logo - optional surface to be drawn at the top center (e.g. game logo)
+# icon - optional surface to be drawn in the top-left corner (e.g. info or pause icon)
+# -------------------------------------------------------------
+# Draws a semi-transparent overlay on the screen.
+# Displays either a "PAUSED" or "INFO" overlay based on overlay_type.
+# Optionally renders a logo and an icon.
+# If overlay_type is "info", additional instructions and tips are displayed.
 def draw_overlay(screen, overlay_type, font, logo=None, icon=None):
-    """Draws either pause or info overlay."""
     width, height = screen.get_size()
 
     # Dim background
