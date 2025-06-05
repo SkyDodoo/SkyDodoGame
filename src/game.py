@@ -3,6 +3,19 @@
 # Main game loop and core logic
 from src.game_over_screen import show_game_over
 from src.score_utils import save_high_score, load_high_score
+from src.config import (
+    SCREEN_WIDTH, SCREEN_HEIGHT,
+    PLAYER_START_X, PLAYER_START_Y,
+    BACKGROUND_IMAGE, PAUSE_ICON_PATH, INFO_ICON_PATH, ICON_SIZE,
+    PAUSE_BTN_POS, INFO_BTN_POS,
+    MUSIC_PATH, JUMP_SOUND_PATH, GAME_OVER_SOUND_PATH,
+    SCROLL_TRIGGER_Y, MAX_PLATFORM_DISTANCE,
+    INFO_BOX_RECT, INFO_TEXT_COLOR, INFO_BG_COLOR,
+    SCORE_POS, LEVEL_POS, SCORE_TEXT_COLOR,
+    NOTIF_DURATION, NOTIF_BG_COLOR, NOTIF_TEXT_COLOR, NOTIF_POS,
+    ENEMY_RESPAWN_Y, INFO_LINES
+)
+import math
 
 def run_game():
     import pygame
@@ -14,50 +27,41 @@ def run_game():
     from src.enemy_logic import spawn_enemies
 
     # Initialize core game variables
-    max_height = 0           # Tracks highest vertical progress (score)
-    scroll_offset = 0        # Tracks how much background has scrolled
+    max_height = 0
+    scroll_offset = 0
 
     pygame.init()
     pygame.mixer.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-    screen_width, screen_height = 600, 750
-    screen = pygame.display.set_mode((screen_width, screen_height))
-
-    # Load background layers and scrolling settings
-    bg_layers = [
-        pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/orig.png").convert_alpha()
-    ]
+    # Load background
+    bg_layers = [pygame.image.load(BACKGROUND_IMAGE).convert_alpha()]
     scroll_offsets = [0 for _ in bg_layers]
     scroll_speeds = [0.2, 0.4, 0.6, 0.8, 1.2]
 
-    # Load sounds and music
+    # Load sounds
     clock = pygame.time.Clock()
-    pygame.mixer.music.load("assets/sounds/background_music.mp3")
+    pygame.mixer.music.load(MUSIC_PATH)
     pygame.mixer.music.play(-1)
-    jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
-    game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
+    jump_sound = pygame.mixer.Sound(JUMP_SOUND_PATH)
+    game_over_sound = pygame.mixer.Sound(GAME_OVER_SOUND_PATH)
 
-    # Set up fonts for UI elements
+    # Fonts
     font = pygame.font.SysFont("Arial", 24)
     pause_font = pygame.font.SysFont("Arial", 48)
     notif_font = pygame.font.SysFont("Arial", 24)
 
-    # Create main player object
-    player = Player(300, screen_height - 150)
+    # Game objects
+    player = Player(PLAYER_START_X, PLAYER_START_Y)
+    platforms = generate_platforms(SCREEN_WIDTH, SCREEN_HEIGHT)
+    enemies = spawn_enemies(2.5, SCREEN_WIDTH, SCREEN_HEIGHT, screen, platforms)
 
-    # Generate platforms and enemies
-    platforms = generate_platforms(screen_width, screen_height)
-    enemies = spawn_enemies(2.5, screen_width, screen_height, screen, platforms)
+    # UI Icons
+    pause_icon = pygame.transform.scale(pygame.image.load(PAUSE_ICON_PATH).convert_alpha(), ICON_SIZE)
+    info_icon = pygame.transform.scale(pygame.image.load(INFO_ICON_PATH).convert_alpha(), ICON_SIZE)
+    pause_rect = pause_icon.get_rect(topleft=PAUSE_BTN_POS)
+    info_rect = info_icon.get_rect(topleft=INFO_BTN_POS)
 
-    # Load and position pause/info icons
-    pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
-    info_icon = pygame.image.load("assets/images/info_btn.svg").convert_alpha()
-    pause_icon = pygame.transform.scale(pause_icon, (40, 40))
-    info_icon = pygame.transform.scale(info_icon, (40, 40))
-    pause_rect = pause_icon.get_rect(topleft=(screen_width - 50, 60))
-    info_rect = info_icon.get_rect(topleft=(screen_width - 100, 60))
-
-    # Game state flags
     paused = False
     show_info = False
     start_y = player.y
@@ -65,65 +69,56 @@ def run_game():
     notif_message = ""
     running = True
 
-    # Main game loop
     while running:
-        dt = clock.tick(60) / 1000  # Delta time in seconds for animation timing
+        dt = clock.tick(60) / 1000
 
-        # --- Handle events ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
             elif not paused and event.type == pygame.MOUSEBUTTONDOWN:
                 if pause_rect.collidepoint(event.pos):
                     paused = True
                 elif info_rect.collidepoint(event.pos):
                     show_info = not show_info
-
             elif not paused and event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_SPACE, pygame.K_UP) and not player.is_jumping:
                     player.jump()
                     jump_sound.play()
 
-        # --- Pause menu ---
         if paused:
-            paused = show_pause_menu(screen, screen_width, screen_height, pause_font)
+            paused = show_pause_menu(screen, SCREEN_WIDTH, SCREEN_HEIGHT, pause_font)
             continue
 
-        # --- Game logic ---
         keys = pygame.key.get_pressed()
-        player.move(keys, screen_width)
+        player.move(keys, SCREEN_WIDTH)
         player.apply_gravity()
         player.update(dt)
 
-        # Update platforms
         for p in platforms:
             p.update()
 
-        # Update score based on scroll offset
         score = int(scroll_offset)
         if score > max_height:
             max_height = score
 
-        difficulty_level = max_height // 300  # Increase difficulty every 300 px
+        difficulty_level = max_height // MAX_PLATFORM_DISTANCE
 
-        # --- Handle vertical scrolling when player ascends ---
-        if player.y < screen_height // 3:
-            scroll = screen_height // 3 - player.y
+        if player.y < SCROLL_TRIGGER_Y:
+            scroll = SCROLL_TRIGGER_Y - player.y
             scroll_offset += scroll
-            player.y = screen_height // 3
+            player.y = SCROLL_TRIGGER_Y
 
             scroll_platforms(platforms, scroll)
-            recycle_platforms(platforms, screen_width, screen_height)
+            recycle_platforms(platforms, SCREEN_WIDTH, SCREEN_HEIGHT)
 
             # Scroll enemies along with platforms
             for enemy in enemies:
                 enemy.rect.y += scroll
-                if enemy.rect.y > screen_height:
+                if enemy.rect.y > SCREEN_HEIGHT:
                     enemy.rect.y = -50
-                    enemy.rect.x = randint(50, screen_width - 100)
+                    enemy.rect.x = randint(50, SCREEN_WIDTH - 100)
 
-        # --- Platform collision detection ---
+
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -133,7 +128,6 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
-        # --- Enemy collision (game over) ---
         for enemy in enemies:
             if player.get_rect().colliderect(enemy.rect):
                 game_over_sound.play()
@@ -146,8 +140,6 @@ def run_game():
                     run_game,
                     player
                 )
-
-        # --- Rendering ---
         draw_background(screen)
 
         for platform in platforms:
@@ -159,30 +151,20 @@ def run_game():
 
         player.draw(screen)
 
-        # --- Info panel display ---
         if show_info:
-            pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
-            info_lines = [
-                "🎮 SkyDodo Instructions:",
-                "- SPACE to jump",
-                "- Avoid red enemies",
-                "- Reach the sky!",
-                "",
-                "Click 'i' to hide this panel."
-            ]
+            pygame.draw.rect(screen, INFO_BG_COLOR, INFO_BOX_RECT)
+            info_lines = INFO_LINES
             for i, line in enumerate(info_lines):
-                screen.blit(font.render(line, True, (0, 0, 0)), (70, 220 + i * 30))
+                screen.blit(font.render(line, True, INFO_TEXT_COLOR), (70, 220 + i * 30))
 
-        # --- UI Elements ---
-        screen.blit(font.render(f"Score: {score}", True, (0, 0, 0)), (10, 10))
-        screen.blit(font.render(f"Lvl: {difficulty_level + 1}", True, (0, 0, 0)), (10, 40))
+        screen.blit(font.render(f"Score: {score}", True, SCORE_TEXT_COLOR), SCORE_POS)
+        screen.blit(font.render(f"Lvl: {difficulty_level + 1}", True, SCORE_TEXT_COLOR), LEVEL_POS)
         screen.blit(pause_icon, pause_rect)
         screen.blit(info_icon, info_rect)
 
-        # --- Game over if player falls off screen ---
-        if player.y > screen_height:
+        if player.y > SCREEN_HEIGHT:
             pygame.mixer.music.stop()
-            scroll_offset += scroll  # Count final scroll if needed
+            scroll_offset += scroll
             game_over_sound.play()
             return show_game_over(
                 screen, font, max_height,
