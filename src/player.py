@@ -162,4 +162,30 @@ class Player:
     # Useful for collision detection.
 
     def get_rect(self):
-        return pygame.Rect(self.x, self.y, self.width, self.height)
+        img_width, img_height = self.image.get_size()
+
+        # Standard hitbox factors
+        if self.direction == "idle":
+            hitbox_width = int(img_width * 0.7)
+            hitbox_height = int(img_height * 0.85)
+        elif self.direction == "fly":
+            # Fly animation is smaller, so hitbox is narrower and shorter,
+            # but now a bit wider than before
+            hitbox_width = int(img_width * 0.75)  # increased from 0.6 to 0.75
+            hitbox_height = int(img_height * 0.7)
+        elif self.direction == "eat":
+            # Example for eat animation, can be adjusted
+            hitbox_width = int(img_width * 0.65)
+            hitbox_height = int(img_height * 0.8)
+        else:
+            # Fallback (in case new animations are added)
+            hitbox_width = int(img_width * 0.7)
+            hitbox_height = int(img_height * 0.8)
+
+        # Center horizontally
+        x_offset = (img_width - hitbox_width) // 2
+
+        # Offset Y so the bottom edge stays aligned
+        y_offset = img_height - hitbox_height
+
+        return pygame.Rect(self.x + x_offset, self.y + y_offset, hitbox_width, hitbox_height)
