@@ -1,9 +1,8 @@
 name: Build SkyDodo
-
-on:
+'on':
   push:
     branches:
-      - main  
+      - main
   pull_request:
     branches:
       - main
@@ -26,38 +25,34 @@ jobs:
         with:
           name: SkyDodo_Linux
           path: SkyDodo_Linux.zip
-
 build-windows:
-    runs-on: windows-latest
+  runs-on: windows-latest
+  steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        python -m pip install pyinstaller
+    - name: Build for Windows
+      run: |
+        pyinstaller --onefile --add-data "assets;assets" main.py
+        Rename-Item -Path dist\main.exe -NewName SkyDodo.exe
+        mkdir release
+        move SkyDodo.exe release\
+        xcopy assets release\assets\ /E /I
+        Compress-Archive -Path release\* -DestinationPath SkyDodo_Windows.zip
+    - uses: actions/upload-artifact@v4
+      with:
+        name: SkyDodo_Windows
+        path: SkyDodo_Windows.zip
+  build-macos:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          python -m pip install pyinstaller
-      - name: Build for Windows
-        run: |
-          pyinstaller --onefile --add-data "assets;assets" main.py
-          Rename-Item -Path dist\main.exe -NewName SkyDodo.exe
-          mkdir release
-          move SkyDodo.exe release\
-          xcopy assets release\assets\ /E /I
-          Compress-Archive -Path release\* -DestinationPath SkyDodo_Windows.zip
-      - uses: actions/upload-artifact@v4
-        with:
-          name: SkyDodo_Windows
-          path: SkyDodo_Windows.zip
-
-    build-macos:
-     runs-on: macos-latest
-     steps:
-      - uses: actions/checkout@v3
-
       - name: Set up virtual environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install pyinstaller
-
       - name: Build for macOS
         run: |
           source venv/bin/activate
@@ -67,7 +62,6 @@ build-windows:
           cp -R assets release/assets
           cd release
           zip -r ../SkyDodo_macOS.zip SkyDodo-macOS assets
-
       - uses: actions/upload-artifact@v4
         with:
           name: SkyDodo_macOS
