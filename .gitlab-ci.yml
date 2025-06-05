@@ -1,12 +1,53 @@
 stages:
-  - test
+  - build
+  - release
 
-test_game_imports:
-  tags:
-    - edu
+build_macos:
+  tags: [edu]  # or your macOS runner tag
+  stage: build
   image: python:3.10
-  stage: test
   before_script:
-    - pip install -r requirements.txt
+    - apt update && apt install -y zip
+    - pip install pyinstaller
   script:
-    - python -c "import pygame; print('Pygame import successful')"
+    - pyinstaller --onefile --add-data "assets:assets" main.py
+    - mv dist/main SkyDodo-macOS
+    - zip -r SkyDodo_macOS.zip SkyDodo-macOS assets/
+  artifacts:
+    paths:
+      - SkyDodo_macOS.zip
+    expire_in: 1 week
+
+release_to_itchio:
+  tags: [edu]
+  stage: release
+  image: ubuntu:latest
+  dependencies:
+    - build_macos
+  before_script:
+    - apt update && apt install -y unzip curl
+    - curl -L -o butler.zip https://broth.itch.ovh/butler/darwin-amd64/LATEST/archive.zip
+    - unzip butler.zip
+    - chmod +x butler
+    - mv butler /usr/local/bin/
+  script:
+    - butler push SkyDodo_macOS.zip yourusername/skydodo:mac
+  only:
+    - tags
+
+release_to_github:
+  tags: [edu]
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Releasing to GitHub..."
+  release:
+    name: "SkyDodo v$CI_COMMIT_TAG"
+    description: "Automated release of SkyDodo for macOS."
+    tag_name: "$CI_COMMIT_TAG"
+    assets:
+      links:
+        - name: "Download SkyDodo for macOS"
+          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/raw/SkyDodo_macOS.zip"
+  only:
+    - tags
