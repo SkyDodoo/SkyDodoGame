@@ -116,8 +116,10 @@ def draw_overlay_ui(surface: pygame.Surface):
     if privacy_accepted:
         pygame.draw.line(surface, (0, 0, 0), checkbox_rect.topleft, checkbox_rect.bottomright, 2)
         pygame.draw.line(surface, (0, 0, 0), checkbox_rect.topright, checkbox_rect.bottomleft, 2)
-    surface.blit(font.render("Accept Privacy Policy", True, (0, 0, 0)), (70, SCREEN_HEIGHT - 62))
-
+    underline_font = pygame.font.SysFont("Arial", 20, italic=True)
+    privacy_label = underline_font.render("Privacy Policy", True, (0, 0, 200))
+    label_rect = privacy_label.get_rect(topleft=(70, SCREEN_HEIGHT - 62))
+    surface.blit(privacy_label, label_rect)
     info_icon = pygame.Rect(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40, 25, 25)
     pygame.draw.circle(surface, (50, 50, 255), info_icon.center, 12)
     surface.blit(font.render("i", True, (255, 255, 255)), (info_icon.x + 7, info_icon.y))
@@ -126,8 +128,7 @@ def draw_overlay_ui(surface: pygame.Surface):
         info_lines = [
             "👨‍💻 Developer Info:",
             "SkyDodo Developers",
-            "- GitHub: github.com/mariia",
-            "- Email: mariia@example.com"
+            "- GitHub https://github.com/SkyDodoo/SkyDodoGame.git"
         ]
         pygame.draw.rect(surface, (240, 240, 240), (40, 100, 520, 120))
         for i, line in enumerate(info_lines):
@@ -205,11 +206,12 @@ def start_menu_loop():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse = event.pos
                 checkbox_rect = pygame.Rect(40, SCREEN_HEIGHT - 60, 20, 20)
+                label_rect = pygame.Rect(70, SCREEN_HEIGHT - 62, 160, 22)
                 info_icon_rect = pygame.Rect(SCREEN_WIDTH - 40, SCREEN_HEIGHT - 40, 25, 25)
 
                 if close_rect and close_rect.collidepoint(mouse):
                     show_privacy_popup = False
-                elif info_icon_rect.collidepoint(mouse):
+                elif info_icon_rect.collidepoint(mouse) or label_rect.collidepoint(mouse):
                     show_privacy_popup = True
                 elif checkbox_rect.collidepoint(mouse):
                     privacy_accepted = not privacy_accepted
