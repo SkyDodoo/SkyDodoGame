@@ -71,7 +71,7 @@ def run_game():
                     jump_sound.play()
 
         if paused:
-            paused = show_pause_menu(screen, screen_width, screen_height, pause_font, bg_layers, scroll_offsets, scroll_speeds)
+            paused = show_pause_menu(screen, screen_width, screen_height, pause_font )
             continue
 
         keys = pygame.key.get_pressed()

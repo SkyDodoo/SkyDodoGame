@@ -1,11 +1,10 @@
-from src.background import draw_animated_background
 
 
 # pause_menu.py
 # ---------------------------------
 # Pause menu rendering and interaction handler
 
-def show_pause_menu(screen, screen_width, screen_height, pause_font, bg_layers, scroll_offsets, scroll_speeds):
+def show_pause_menu(screen, screen_width, screen_height, pause_font ):
     import pygame
     clock = pygame.time.Clock()
     running = True
@@ -15,15 +14,13 @@ def show_pause_menu(screen, screen_width, screen_height, pause_font, bg_layers, 
     quit_btn = pygame.Rect(screen_width // 2 - 100, 380, 200, 50)
 
     while running:
-        draw_animated_background(screen, bg_layers, scroll_offsets, scroll_speeds)
 
         # Dim overlay
         overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 160))  # Semi-transparent black overlay
         screen.blit(overlay, (0, 0))
 
         # Title text
-        title = pause_font.render("Game Paused", True, (255, 255, 255))
+        title = pause_font.render("Game Paused", True, (0, 0, 139))
         screen.blit(title, (screen_width // 2 - title.get_width() // 2, 150))
 
         # Draw buttons
@@ -51,3 +48,4 @@ def show_pause_menu(screen, screen_width, screen_height, pause_font, bg_layers, 
                     return False  # Resume the game with ESC
 
         clock.tick(60)
+    return None
