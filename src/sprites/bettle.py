@@ -4,7 +4,7 @@ import os
 class Bettle(BaseEnemy):
     def __init__(self, game, x=300, y=400):
         frame_paths = [
-            os.path.join("assets", "images", "enemies", f"bettle{i}.png")
+            os.path.join("assets", "images", "enemies", f"bettle_smaller{i}.png")
             for i in range(1, 5)
         ]
         super().__init__(
