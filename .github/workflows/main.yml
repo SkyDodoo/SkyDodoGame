@@ -27,7 +27,7 @@ jobs:
           name: SkyDodo_Linux
           path: SkyDodo_Linux.zip
 
-   build-windows:
+build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
@@ -47,20 +47,27 @@ jobs:
           name: SkyDodo_Windows
           path: SkyDodo_Windows.zip
 
-
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
+    build-macos:
+     runs-on: macos-latest
+     steps:
       - uses: actions/checkout@v3
-      - name: Install dependencies
+
+      - name: Set up virtual environment
         run: |
-          pip3 install pyinstaller
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install pyinstaller
+
       - name: Build for macOS
         run: |
+          source venv/bin/activate
           pyinstaller --onefile --add-data "assets:assets" main.py
-          mv dist/main SkyDodo-macOS
-          zip -r SkyDodo_macOS.zip SkyDodo-macOS assets
+          mkdir release
+          mv dist/main release/SkyDodo-macOS
+          cp -R assets release/assets
+          cd release
+          zip -r ../SkyDodo_macOS.zip SkyDodo-macOS assets
+
       - uses: actions/upload-artifact@v4
         with:
           name: SkyDodo_macOS
