@@ -18,10 +18,14 @@
 # and a blinking "GAME OVER" title.
 # Offers the option to retry (SPACE) or quit (ESC).
 # High score is updated and saved if the player beats it.
+
 def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds, save_high_score_func, load_high_score_func, run_game_func, player):
     import pygame
     clock = pygame.time.Clock()
     running = True
+
+    # Ensure score is an integer
+    score = int(score)
 
     # Load and update high score if current score is higher
     high_score = load_high_score_func()
@@ -34,8 +38,8 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
     score_font = pygame.font.SysFont("Comic Sans MS", 32)
     hint_font = pygame.font.SysFont("Comic Sans MS", 24)
 
-    blink = True # Controls blinking of "GAME OVER"
-    blink_timer = 0 # Timer to toggle blinking
+    blink = True  # Controls blinking of "GAME OVER"
+    blink_timer = 0  # Timer to toggle blinking
 
     while running:
         # Animated background
@@ -89,4 +93,5 @@ def show_game_over(screen, font, score, bg_layers, scroll_offsets, scroll_speeds
                     exit()
 
         clock.tick(60)
+
     return None
