@@ -157,16 +157,6 @@ def run_game(scroll_offset=None):
                     player.vel_y = 0
                     player.is_jumping = False
 
-        for enemy in enemies:
-            if player.get_rect().colliderect(enemy.rect):
-                game_over_sound.play()
-                pygame.mixer.music.stop()
-                return show_game_over(
-                    screen, font, scroll_offset,
-                    bg_layers, scroll_offsets, scroll_speeds,
-                    save_high_score, load_high_score,
-                    run_game, player
-                )
 
         # Draw everything
         draw_background(screen)
@@ -212,6 +202,18 @@ def run_game(scroll_offset=None):
                 save_high_score, load_high_score,
                 run_game, player
             )
+
+
+        for enemy in enemies:
+            if player.get_rect().colliderect(enemy.rect):
+                game_over_sound.play()
+                pygame.mixer.music.stop()
+                return show_game_over(
+                    screen, font, scroll_offset,
+                    bg_layers, scroll_offsets, scroll_speeds,
+                    save_high_score, load_high_score,
+                    run_game, player
+                )
 
         pygame.display.update()
 

@@ -25,3 +25,4 @@ assets/*.tmp
 *.c
 *.cpp
 /highscore.txt
+/settings.json
