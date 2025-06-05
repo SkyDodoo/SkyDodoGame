@@ -3,6 +3,19 @@
 # ---------------------------------
 # Handles enemy creation with collision constraints
 
+# Method: spawn_enemies
+# num - number of enemies to spawn
+# screen_width, screen_height - dimensions of the game screen
+# game - reference to the game instance (used to create enemy instances)
+# platforms - list of platform objects to avoid when spawning enemies
+# -------------------------------------------------------------
+# Spawns a specified number of enemies at random positions on the screen.
+# Ensures that enemies:
+# - do not spawn inside or too close to platforms,
+# - do not spawn too close to each other (min_distance),
+# - are within screen bounds.
+# Tries up to 1000 attempts to find valid spawn positions.
+
 def spawn_enemies(num, screen_width, screen_height, game, platforms):
     import pygame
     from random import randint
