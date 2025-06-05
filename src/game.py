@@ -2,7 +2,6 @@
 # ---------------------------------
 # Main game loop and core logic
 
-import math
 import pygame
 from random import randint
 from src.settings import load_settings, save_settings
@@ -15,9 +14,7 @@ from src.config import (
     MUSIC_PATH, JUMP_SOUND_PATH, GAME_OVER_SOUND_PATH,
     SCROLL_TRIGGER_Y, MAX_PLATFORM_DISTANCE,
     INFO_BOX_RECT, INFO_TEXT_COLOR, INFO_BG_COLOR,
-    SCORE_POS, LEVEL_POS, SCORE_TEXT_COLOR,
-    NOTIF_DURATION, NOTIF_BG_COLOR, NOTIF_TEXT_COLOR, NOTIF_POS,
-    ENEMY_RESPAWN_Y, INFO_LINES
+    SCORE_POS, LEVEL_POS, SCORE_TEXT_COLOR, INFO_LINES
 )
 from src.player import Player
 from src.game_platform import generate_platforms, scroll_platforms, recycle_platforms
