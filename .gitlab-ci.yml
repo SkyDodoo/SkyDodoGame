@@ -2,6 +2,8 @@ stages:
   - test
 
 test_game_imports:
+  tags:
+    - edu
   image: python:3.10
   stage: test
   before_script:
