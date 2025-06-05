@@ -4,7 +4,6 @@
 from src.game_over_screen import show_game_over
 from src.score_utils import save_high_score, load_high_score
 
-
 def run_game():
     import pygame
     from random import randint
@@ -14,34 +13,43 @@ def run_game():
     from src.pause_menu import show_pause_menu
     from src.enemy_logic import spawn_enemies
 
-    # Init height for score
-    max_height = 0
-    scroll_offset = 0
+    # Initialize core game variables
+    max_height = 0           # Tracks highest vertical progress (score)
+    scroll_offset = 0        # Tracks how much background has scrolled
+
     pygame.init()
     pygame.mixer.init()
+
     screen_width, screen_height = 600, 750
     screen = pygame.display.set_mode((screen_width, screen_height))
 
+    # Load background layers and scrolling settings
     bg_layers = [
         pygame.image.load("assets/images/Nature Landscapes Free Pixel Art/nature_1/orig.png").convert_alpha()
     ]
     scroll_offsets = [0 for _ in bg_layers]
     scroll_speeds = [0.2, 0.4, 0.6, 0.8, 1.2]
 
+    # Load sounds and music
     clock = pygame.time.Clock()
     pygame.mixer.music.load("assets/sounds/background_music.mp3")
     pygame.mixer.music.play(-1)
     jump_sound = pygame.mixer.Sound('./assets/sounds/jump_sound.wav')
     game_over_sound = pygame.mixer.Sound("assets/sounds/gameover.wav")
 
+    # Set up fonts for UI elements
     font = pygame.font.SysFont("Arial", 24)
     pause_font = pygame.font.SysFont("Arial", 48)
     notif_font = pygame.font.SysFont("Arial", 24)
 
+    # Create main player object
     player = Player(300, screen_height - 150)
+
+    # Generate platforms and enemies
     platforms = generate_platforms(screen_width, screen_height)
     enemies = spawn_enemies(2.5, screen_width, screen_height, screen, platforms)
 
+    # Load and position pause/info icons
     pause_icon = pygame.image.load("assets/images/pause_btn.svg").convert_alpha()
     info_icon = pygame.image.load("assets/images/info_btn.svg").convert_alpha()
     pause_icon = pygame.transform.scale(pause_icon, (40, 40))
@@ -49,60 +57,73 @@ def run_game():
     pause_rect = pause_icon.get_rect(topleft=(screen_width - 50, 60))
     info_rect = info_icon.get_rect(topleft=(screen_width - 100, 60))
 
+    # Game state flags
     paused = False
     show_info = False
     start_y = player.y
-    max_height = 0
     notif_timer = 0
     notif_message = ""
-
     running = True
-    while running:
-        dt = clock.tick(60) / 1000
 
+    # Main game loop
+    while running:
+        dt = clock.tick(60) / 1000  # Delta time in seconds for animation timing
+
+        # --- Handle events ---
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
             elif not paused and event.type == pygame.MOUSEBUTTONDOWN:
                 if pause_rect.collidepoint(event.pos):
                     paused = True
                 elif info_rect.collidepoint(event.pos):
                     show_info = not show_info
+
             elif not paused and event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not player.is_jumping:
+                if event.key in (pygame.K_SPACE, pygame.K_UP) and not player.is_jumping:
                     player.jump()
                     jump_sound.play()
 
+        # --- Pause menu ---
         if paused:
-            paused = show_pause_menu(screen, screen_width, screen_height, pause_font )
+            paused = show_pause_menu(screen, screen_width, screen_height, pause_font)
             continue
 
+        # --- Game logic ---
         keys = pygame.key.get_pressed()
         player.move(keys, screen_width)
         player.apply_gravity()
         player.update(dt)
 
+        # Update platforms
         for p in platforms:
             p.update()
 
-        height_climbed = int(start_y - player.y)
-        if height_climbed > max_height:
-            max_height = height_climbed
+        # Update score based on scroll offset
+        score = int(scroll_offset)
+        if score > max_height:
+            max_height = score
 
-        difficulty_level = max_height // 300
+        difficulty_level = max_height // 300  # Increase difficulty every 300 px
 
+        # --- Handle vertical scrolling when player ascends ---
         if player.y < screen_height // 3:
             scroll = screen_height // 3 - player.y
             scroll_offset += scroll
             player.y = screen_height // 3
+
             scroll_platforms(platforms, scroll)
             recycle_platforms(platforms, screen_width, screen_height)
+
+            # Scroll enemies along with platforms
             for enemy in enemies:
                 enemy.rect.y += scroll
                 if enemy.rect.y > screen_height:
                     enemy.rect.y = -50
                     enemy.rect.x = randint(50, screen_width - 100)
 
+        # --- Platform collision detection ---
         player_rect = player.get_rect()
         for p in platforms:
             plat_rect = pygame.Rect(p.x, p.y, p.width, p.height)
@@ -112,27 +133,33 @@ def run_game():
                     player.vel_y = 0
                     player.is_jumping = False
 
+        # --- Enemy collision (game over) ---
         for enemy in enemies:
             if player.get_rect().colliderect(enemy.rect):
                 game_over_sound.play()
                 pygame.mixer.music.stop()
                 return show_game_over(
-                screen, font, max_height,
-                bg_layers, scroll_offsets, scroll_speeds,
-                save_high_score,
-                load_high_score,
-                run_game,
-                player
+                    screen, font, max_height,
+                    bg_layers, scroll_offsets, scroll_speeds,
+                    save_high_score,
+                    load_high_score,
+                    run_game,
+                    player
                 )
 
+        # --- Rendering ---
         draw_background(screen)
+
         for platform in platforms:
             platform.draw(screen)
+
         for enemy in enemies:
             enemy.update()
             screen.blit(enemy.image, enemy.rect)
+
         player.draw(screen)
 
+        # --- Info panel display ---
         if show_info:
             pygame.draw.rect(screen, (240, 240, 240), (50, 200, 500, 300))
             info_lines = [
@@ -146,18 +173,16 @@ def run_game():
             for i, line in enumerate(info_lines):
                 screen.blit(font.render(line, True, (0, 0, 0)), (70, 220 + i * 30))
 
-        score = int(scroll_offset)
-        if score > max_height:
-            max_height = score
-
+        # --- UI Elements ---
         screen.blit(font.render(f"Score: {score}", True, (0, 0, 0)), (10, 10))
         screen.blit(font.render(f"Lvl: {difficulty_level + 1}", True, (0, 0, 0)), (10, 40))
         screen.blit(pause_icon, pause_rect)
         screen.blit(info_icon, info_rect)
 
+        # --- Game over if player falls off screen ---
         if player.y > screen_height:
             pygame.mixer.music.stop()
-            scroll_offset += scroll
+            scroll_offset += scroll  # Count final scroll if needed
             game_over_sound.play()
             return show_game_over(
                 screen, font, max_height,
@@ -169,4 +194,5 @@ def run_game():
             )
 
         pygame.display.update()
+
     return None
