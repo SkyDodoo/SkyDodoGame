@@ -12,6 +12,7 @@ PLAYER_START_Y = SCREEN_HEIGHT - 150
 BACKGROUND_IMAGE = "assets/images/Nature Landscapes Free Pixel Art/nature_1/orig.png"
 PAUSE_ICON_PATH = "assets/images/pause_btn.svg"
 INFO_ICON_PATH = "assets/images/info_btn.svg"
+VOLUME_ICON_PATH = "assets/images/volume_btn.svg"
 ICON_SIZE = (40, 40)
 
 # UI positions
