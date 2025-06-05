@@ -7,6 +7,7 @@ build_macos:
   stage: build
   image: python:3.10
   before_script:
+    - apt update && apt install -y zip
     - pip install pyinstaller
   script:
     - pyinstaller --onefile --add-data "assets:assets" main.py
