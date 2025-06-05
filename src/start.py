@@ -17,6 +17,16 @@ sky_y = 0
 sky_speed = 0.2
 clouds: List[Dict[str, Any]] = []
 
+# Function: load_assets
+# -------------------------------
+# Loads and prepares all required image assets for the game.
+# Sets global variables:
+# - sky_img: background sky image, scaled to screen size
+# - cloud_img_original: o
+# riginal cloud layer image
+# - fh_img: foreground hill or object image, scaled to fixed size
+# Raises FileNotFoundError if any asset is missing.
+# Asserts that all images are successfully loaded.
 
 def load_assets():
     """Load and prepare all image assets."""
@@ -39,6 +49,14 @@ def load_assets():
     assert sky_img and cloud_img_original and fh_img, "All images must be loaded."
 
 
+# Function: reset_background
+# -------------------------------
+# Clears the current cloud list and regenerates cloud objects for the background.
+# This helps reset the visual background when restarting or resetting the game.
+#
+# Globals modified:
+# - clouds: list of cloud positions, cleared and re-filled.
+
 def reset_background():
     """Clear and regenerate clouds for the background."""
     global clouds
@@ -46,6 +64,15 @@ def reset_background():
     for i in range(3):
         clouds.append(create_cloud(y=i * 100))
 
+
+# Function: create_cloud
+# y - Optional[int]: specific vertical position for the cloud (default: random above screen)
+# -------------------------------
+# Creates and returns a dictionary representing a cloud object with:
+# - Random horizontal position
+# - Random speed
+# - Scaled and optionally flipped image
+# Used to populate or reset background elements dynamically.
 
 def create_cloud(y: Optional[int] = None) -> Dict[str, Any]:
     """Create a new cloud with random properties."""
@@ -65,6 +92,16 @@ def create_cloud(y: Optional[int] = None) -> Dict[str, Any]:
     return {"image": image, "x": x, "y": y, "speed": random.uniform(0.5, 2.5)}
 
 
+# Function: draw_layer
+# surface - pygame.Surface: the target surface to draw on (e.g., screen)
+# img - pygame.Surface: the image to use as the scrolling layer
+# y - float: vertical scroll offset
+# ------------------------------------------------------------
+# Draws a vertically scrolling image layer that wraps seamlessly.
+# Useful for backgrounds like sky, parallax layers, etc.
+# The image is drawn twice: once above and once at the current offset,
+# creating a continuous scroll effect when the offset exceeds the image height.
+
 def draw_layer(surface: pygame.Surface, img: pygame.Surface, y: float):
     """Draw a vertically scrolling layer that wraps."""
     height = img.get_height()
@@ -72,6 +109,14 @@ def draw_layer(surface: pygame.Surface, img: pygame.Surface, y: float):
     surface.blit(img, (0, y - height))
     surface.blit(img, (0, y))
 
+
+# Function: draw_background
+# surface - pygame.Surface: the screen or surface to draw everything on
+# ------------------------------------------------------------
+# Draws the animated background, which includes:
+# 1. A vertically scrolling sky layer.
+# 2. Animated, randomly moving clouds that regenerate when off-screen.
+# 3. A static image/logo ("fh.jpg") placed in the top-right corner.
 
 def draw_background(surface: pygame.Surface):
     """Draw the animated background including sky, clouds, and static logo."""
