@@ -30,3 +30,8 @@ class Bettle(BaseEnemy):
         elif self.rect.x < self.start_x - self.move_range:
             self.direction = 1
 
+        if self.direction == 1:
+            self.facing = 'left'
+        else:
+            self.facing = 'right'
+
