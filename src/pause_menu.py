@@ -4,12 +4,23 @@
 # ---------------------------------
 # Pause menu rendering and interaction handler
 
+# Method: show_pause_menu
+# screen - instance of the Pygame screen to render to
+# screen_width, screen_height - dimensions of the screen
+# pause_font - font object for rendering the title
+# -------------------------------------------------------------
+# Displays the pause menu with two buttons: "Resume" and "Quit".
+# Renders a dimmed overlay and handles input events for both buttons.
+# The menu stays open until the user chooses to resume or quit the game.
+
 def show_pause_menu(screen, screen_width, screen_height, pause_font ):
     import pygame
     clock = pygame.time.Clock()
     running = True
 
     btn_font = pygame.font.SysFont("Arial", 32)
+
+    # Define button rectangles
     resume_btn = pygame.Rect(screen_width // 2 - 100, 300, 200, 50)
     quit_btn = pygame.Rect(screen_width // 2 - 100, 380, 200, 50)
 
@@ -27,6 +38,7 @@ def show_pause_menu(screen, screen_width, screen_height, pause_font ):
         pygame.draw.rect(screen, (100, 200, 100), resume_btn, border_radius=12)
         pygame.draw.rect(screen, (200, 80, 80), quit_btn, border_radius=12)
 
+        # Render button labels
         screen.blit(btn_font.render("▶ Resume", True, (255, 255, 255)), (resume_btn.x + 40, resume_btn.y + 10))
         screen.blit(btn_font.render("⏻ Quit", True, (255, 255, 255)), (quit_btn.x + 60, quit_btn.y + 10))
 
