@@ -5,6 +5,7 @@
 import math
 import pygame
 from random import randint
+from src.settings import load_settings, save_settings
 
 from src.config import (
     SCREEN_WIDTH, SCREEN_HEIGHT,
@@ -45,8 +46,10 @@ def run_game(scroll_offset=None):
     jump_sound = pygame.mixer.Sound(JUMP_SOUND_PATH)
     game_over_sound = pygame.mixer.Sound(GAME_OVER_SOUND_PATH)
 
-    # Set initial volume
-    volume = 0.5
+    # Load saved volume
+    settings = load_settings()
+    volume = settings.get("volume", 0.5)
+
     pygame.mixer.music.set_volume(volume)
     jump_sound.set_volume(volume)
     game_over_sound.set_volume(volume)
@@ -100,6 +103,8 @@ def run_game(scroll_offset=None):
                         pygame.mixer.music.set_volume(volume)
                         jump_sound.set_volume(volume)
                         game_over_sound.set_volume(volume)
+                        settings["volume"] = volume
+                        save_settings(settings)
 
                 elif event.type == pygame.MOUSEMOTION and slider_visible and event.buttons[0]:
                     if volume_slider_rect.collidepoint(event.pos):
@@ -109,6 +114,8 @@ def run_game(scroll_offset=None):
                         pygame.mixer.music.set_volume(volume)
                         jump_sound.set_volume(volume)
                         game_over_sound.set_volume(volume)
+                        settings["volume"] = volume
+                        save_settings(settings)
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key in (pygame.K_SPACE, pygame.K_UP) and not player.is_jumping:
@@ -188,17 +195,14 @@ def run_game(scroll_offset=None):
         screen.blit(volume_icon, volume_rect)
 
         if slider_visible:
-            # New elegant slider style
             slider_width = 6
             knob_radius = 8
             center_x = volume_slider_rect.centerx
 
-            # Slider track
             pygame.draw.rect(screen, (160, 160, 160),
                              (center_x - slider_width // 2, volume_slider_rect.top,
                               slider_width, volume_slider_rect.height), border_radius=3)
 
-            # Knob position based on volume
             knob_y = volume_slider_rect.top + (1 - volume) * volume_slider_rect.height
             pygame.draw.circle(screen, (80, 80, 255), (center_x, int(knob_y)), knob_radius)
 
