@@ -2,9 +2,11 @@ name: Build SkyDodo
 
 on:
   push:
-    tags:
-      - 'v*'
-
+    branches:
+      - main  
+  pull_request:
+    branches:
+      - main
 jobs:
   build-linux:
     runs-on: ubuntu-latest
@@ -25,25 +27,26 @@ jobs:
           name: SkyDodo_Linux
           path: SkyDodo_Linux.zip
 
-  build-windows:
+   build-windows:
     runs-on: windows-latest
     steps:
-        - uses: actions/checkout@v3
-        - name: Install dependencies
-          run: |
-            python -m pip install pyinstaller
-        - name: Build for Windows
-          run: |
-            pyinstaller --onefile --add-data "assets;assets" main.py
-            rename dist\main.exe SkyDodo.exe
-            mkdir release
-            move SkyDodo.exe release\
-            xcopy assets release\assets\ /E /I
-            Compress-Archive -Path release\* -DestinationPath SkyDodo_Windows.zip
-        - uses: actions/upload-artifact@v4
-          with:
-            name: SkyDodo_Windows
-            path: SkyDodo_Windows.zip
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          python -m pip install pyinstaller
+      - name: Build for Windows
+        run: |
+          pyinstaller --onefile --add-data "assets;assets" main.py
+          Rename-Item -Path dist\main.exe -NewName SkyDodo.exe
+          mkdir release
+          move SkyDodo.exe release\
+          xcopy assets release\assets\ /E /I
+          Compress-Archive -Path release\* -DestinationPath SkyDodo_Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkyDodo_Windows
+          path: SkyDodo_Windows.zip
+
 
 
   build-macos:
